@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\HomepageSection;
 use Illuminate\Http\Request;
+use App\Services\ResponseService;
 
 class HomepageSectionController extends Controller
 {
@@ -12,8 +14,10 @@ class HomepageSectionController extends Controller
      */
     public function index()
     {
-        $sections = HomepageSection::orderBy('order')->paginate(15);
-        return view('homepage-sections.index', compact('sections'));
+        if (!has_permissions('read', 'homepage_sections')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        }
+        return view('homepage-sections.index');
     }
 
     /**
@@ -21,6 +25,9 @@ class HomepageSectionController extends Controller
      */
     public function create()
     {
+        if (!has_permissions('create', 'homepage_sections')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        }
         $sectionTypes = [
             'hero' => 'Hero Banner',
             'featured_properties' => 'Propiedades Destacadas',
@@ -39,6 +46,10 @@ class HomepageSectionController extends Controller
      */
     public function store(Request $request)
     {
+        if (!has_permissions('create', 'homepage_sections')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string',
@@ -59,19 +70,44 @@ class HomepageSectionController extends Controller
 
             $section->save();
 
-            return redirect()->route('homepage-sections.index')
-                ->with('success', 'Sección creada exitosamente');
-        } catch (\Exception $e) {
-            return back()->withError('Error: ' . $e->getMessage());
+            return ResponseService::successResponse(trans('Sección creada exitosamente'));
+        } catch (Exception $e) {
+            return ResponseService::errorResponse(trans('Error al crear la sección'));
         }
     }
 
     /**
-     * Show section
+     * Show sections list (for datatables)
      */
-    public function show(HomepageSection $homepageSection)
+    public function show(Request $request)
     {
-        return view('homepage-sections.show', compact('homepageSection'));
+        if (!has_permissions('read', 'homepage_sections')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
+        $offset = $request->input('offset', 0);
+        $limit = $request->input('limit', 10);
+        $sort = $request->input('sort', 'order');
+        $order = $request->input('order', 'ASC');
+
+        $query = HomepageSection::query();
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where('title', 'LIKE', "%$search%")
+                  ->orWhere('type', 'LIKE', "%$search%");
+        }
+
+        $total = $query->count();
+        $sections = $query->orderBy($sort, $order)
+                          ->skip($offset)
+                          ->take($limit)
+                          ->get();
+
+        return response()->json([
+            'total' => $total,
+            'rows' => $sections
+        ]);
     }
 
     /**
@@ -79,6 +115,9 @@ class HomepageSectionController extends Controller
      */
     public function edit(HomepageSection $homepageSection)
     {
+        if (!has_permissions('update', 'homepage_sections')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        }
         $sectionTypes = [
             'hero' => 'Hero Banner',
             'featured_properties' => 'Propiedades Destacadas',
@@ -97,6 +136,10 @@ class HomepageSectionController extends Controller
      */
     public function update(Request $request, HomepageSection $homepageSection)
     {
+        if (!has_permissions('update', 'homepage_sections')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string',
@@ -115,10 +158,9 @@ class HomepageSectionController extends Controller
 
             $homepageSection->update($validated);
 
-            return redirect()->route('homepage-sections.index')
-                ->with('success', 'Sección actualizada exitosamente');
-        } catch (\Exception $e) {
-            return back()->withError('Error: ' . $e->getMessage());
+            return ResponseService::successResponse(trans('Sección actualizada exitosamente'));
+        } catch (Exception $e) {
+            return ResponseService::errorResponse(trans('Error al actualizar la sección'));
         }
     }
 
@@ -127,12 +169,15 @@ class HomepageSectionController extends Controller
      */
     public function destroy(HomepageSection $homepageSection)
     {
+        if (!has_permissions('delete', 'homepage_sections')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         try {
             $homepageSection->delete();
-            return redirect()->route('homepage-sections.index')
-                ->with('success', 'Sección eliminada exitosamente');
-        } catch (\Exception $e) {
-            return back()->withError('Error: ' . $e->getMessage());
+            return ResponseService::successResponse(trans('Sección eliminada exitosamente'));
+        } catch (Exception $e) {
+            return ResponseService::errorResponse(trans('Error al eliminar la sección'));
         }
     }
 
@@ -141,6 +186,10 @@ class HomepageSectionController extends Controller
      */
     public function updateOrder(Request $request)
     {
+        if (!has_permissions('update', 'homepage_sections')) {
+            return response()->json(['success' => false, 'message' => PERMISSION_ERROR_MSG], 403);
+        }
+
         $validated = $request->validate([
             'sections' => 'required|array',
             'sections.*.id' => 'required|integer',
@@ -153,9 +202,10 @@ class HomepageSectionController extends Controller
                     ->update(['order' => $section['order']]);
             }
 
-            return response()->json(['success' => true, 'message' => 'Orden actualizado']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            return response()->json(['success' => true, 'message' => trans('Orden actualizado')]);
+        } catch (Exception $e) {
+            return response()->json(['success' => false, 'message' => trans('Error al actualizar el orden')], 500);
         }
     }
 }
+

@@ -6,6 +6,7 @@ use Exception;
 use App\Models\AdBanner;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Services\ResponseService;
 
 class AdBannerController extends Controller
 {
@@ -14,8 +15,10 @@ class AdBannerController extends Controller
      */
     public function index()
     {
-        $banners = AdBanner::latest()->paginate(15);
-        return view('ad-banners.index', compact('banners'));
+        if (!has_permissions('read', 'ad_banners')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        }
+        return view('ad-banners.index');
     }
 
     /**
@@ -23,6 +26,9 @@ class AdBannerController extends Controller
      */
     public function create()
     {
+        if (!has_permissions('create', 'ad_banners')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        }
         $categories = Category::where('status', 1)->get();
         return view('ad-banners.create', compact('categories'));
     }
@@ -32,6 +38,10 @@ class AdBannerController extends Controller
      */
     public function store(Request $request)
     {
+        if (!has_permissions('create', 'ad_banners')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         $validated = $request->validate([
             'page' => 'required|in:homepage,property_listing,property_detail',
             'platform' => 'required|in:app,web',
@@ -54,19 +64,44 @@ class AdBannerController extends Controller
 
             $banner->save();
 
-            return redirect()->route('ad-banners.index')
-                ->with('success', 'Banner publicitario creado exitosamente');
+            return ResponseService::successResponse(trans('Banner publicitario creado exitosamente'));
         } catch (Exception $e) {
-            return back()->withError('Error al crear el banner: ' . $e->getMessage());
+            return ResponseService::errorResponse(trans('Error al crear el banner'));
         }
     }
 
     /**
      * Show ad banner
      */
-    public function show(AdBanner $adBanner)
+    public function show(Request $request)
     {
-        return view('ad-banners.show', compact('adBanner'));
+        if (!has_permissions('read', 'ad_banners')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
+        $offset = $request->input('offset', 0);
+        $limit = $request->input('limit', 10);
+        $sort = $request->input('sort', 'id');
+        $order = $request->input('order', 'DESC');
+
+        $query = AdBanner::query();
+
+        if ($request->filled('search')) {
+            $search = $request->get('search');
+            $query->where('placement', 'LIKE', "%$search%")
+                  ->orWhere('page', 'LIKE', "%$search%");
+        }
+
+        $total = $query->count();
+        $banners = $query->orderBy($sort, $order)
+                         ->skip($offset)
+                         ->take($limit)
+                         ->get();
+
+        return response()->json([
+            'total' => $total,
+            'rows' => $banners
+        ]);
     }
 
     /**
@@ -74,6 +109,9 @@ class AdBannerController extends Controller
      */
     public function edit(AdBanner $adBanner)
     {
+        if (!has_permissions('update', 'ad_banners')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        }
         $categories = Category::where('status', 1)->get();
         return view('ad-banners.edit', compact('adBanner', 'categories'));
     }
@@ -83,6 +121,10 @@ class AdBannerController extends Controller
      */
     public function update(Request $request, AdBanner $adBanner)
     {
+        if (!has_permissions('update', 'ad_banners')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         $validated = $request->validate([
             'page' => 'required|in:homepage,property_listing,property_detail',
             'platform' => 'required|in:app,web',
@@ -103,10 +145,9 @@ class AdBannerController extends Controller
 
             $adBanner->update($validated);
 
-            return redirect()->route('ad-banners.index')
-                ->with('success', 'Banner actualizado exitosamente');
+            return ResponseService::successResponse(trans('Banner actualizado exitosamente'));
         } catch (Exception $e) {
-            return back()->withError('Error al actualizar el banner: ' . $e->getMessage());
+            return ResponseService::errorResponse(trans('Error al actualizar el banner'));
         }
     }
 
@@ -115,12 +156,16 @@ class AdBannerController extends Controller
      */
     public function destroy(AdBanner $adBanner)
     {
+        if (!has_permissions('delete', 'ad_banners')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         try {
             $adBanner->delete();
-            return redirect()->route('ad-banners.index')
-                ->with('success', 'Banner eliminado exitosamente');
+            return ResponseService::successResponse(trans('Banner eliminado exitosamente'));
         } catch (Exception $e) {
-            return back()->withError('Error al eliminar el banner: ' . $e->getMessage());
+            return ResponseService::errorResponse(trans('Error al eliminar el banner'));
         }
     }
 }
+
