@@ -7,6 +7,9 @@ use App\Http\Controllers\Api\ChatApiController;
 use App\Http\Controllers\Api\PaymentApiController;
 use App\Http\Controllers\Api\PackageApiController;
 use App\Http\Controllers\Api\InterestApiController;
+use App\Http\Controllers\Api\AppointmentController;
+use App\Http\Controllers\Api\AgentUnavailabilityController;
+use App\Http\Controllers\Api\PropertyViewController;
 // Fallback to old controller for methods not yet migrated
 use App\Http\Controllers\ApiController;
 
@@ -65,6 +68,12 @@ Route::post('get_system_settings', [ApiController::class, 'get_system_settings']
 Route::get('homepage-data', [ApiController::class, 'homepageData']);
 Route::get('faqs', [ApiController::class, 'getFaqData']);
 
+// Property Views (Public - for tracking)
+Route::post('properties/{propertyId}/view', [PropertyViewController::class, 'recordView']);
+Route::get('properties/{propertyId}/views/stats', [PropertyViewController::class, 'propertyViewsStats']);
+Route::get('properties/most-viewed', [PropertyViewController::class, 'mostViewed']);
+Route::get('properties/most-viewed/month', [PropertyViewController::class, 'mostViewedThisMonth']);
+
 });
 
 // ============================================
@@ -106,6 +115,35 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('get_limits', [PackageApiController::class, 'getLimits']);
     Route::delete('remove-all-packages', [PackageApiController::class, 'removeAllPackages']);
     Route::post('user_purchase_package', [PackageApiController::class, 'purchasePackage']);
+
+    // ========== APPOINTMENTS ROUTES ==========
+    Route::get('appointments', [AppointmentController::class, 'index']);
+    Route::post('appointments', [AppointmentController::class, 'store']);
+    Route::get('appointments/{id}', [AppointmentController::class, 'show']);
+    Route::put('appointments/{id}', [AppointmentController::class, 'update']);
+    Route::patch('appointments/{id}/confirm', [AppointmentController::class, 'confirm']);
+    Route::patch('appointments/{id}/complete', [AppointmentController::class, 'complete']);
+    Route::delete('appointments/{id}/cancel', [AppointmentController::class, 'cancel']);
+    Route::patch('appointments/{id}/reschedule', [AppointmentController::class, 'reschedule']);
+    Route::delete('appointments/{id}', [AppointmentController::class, 'destroy']);
+    Route::get('appointments/stats', [AppointmentController::class, 'stats']);
+    Route::get('users/{userId}/appointments', [AppointmentController::class, 'getUserAppointments']);
+    Route::get('properties/{propertyId}/appointments', [AppointmentController::class, 'getPropertyAppointments']);
+
+    // ========== AGENT UNAVAILABILITY ROUTES ==========
+    Route::get('agents/{agentId}/unavailabilities', [AgentUnavailabilityController::class, 'index']);
+    Route::post('agents/{agentId}/unavailabilities', [AgentUnavailabilityController::class, 'store']);
+    Route::get('unavailabilities/{id}', [AgentUnavailabilityController::class, 'show']);
+    Route::put('unavailabilities/{id}', [AgentUnavailabilityController::class, 'update']);
+    Route::delete('unavailabilities/{id}', [AgentUnavailabilityController::class, 'destroy']);
+    Route::get('agents/{agentId}/unavailabilities/current', [AgentUnavailabilityController::class, 'currentUnavailabilities']);
+    Route::get('agents/{agentId}/check-availability/{date}', [AgentUnavailabilityController::class, 'checkAvailability']);
+    Route::get('agents/{agentId}/unavailabilities/stats', [AgentUnavailabilityController::class, 'stats']);
+
+    // ========== PROPERTY VIEWS ROUTES ==========
+    Route::get('properties/{propertyId}/views', [PropertyViewController::class, 'propertyViews']);
+    Route::get('users/{userId}/property-views', [PropertyViewController::class, 'userViews']);
+    Route::delete('properties/{propertyId}/views/cleanup', [PropertyViewController::class, 'cleanup']);
 
     // ========== INTEREST/FAVORITES ROUTES ==========
     Route::post('add_favourite', [InterestApiController::class, 'addFavourite']);

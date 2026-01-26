@@ -9,7 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('city_images', function (Blueprint $table) {
-            $table->json('names')->nullable()->after('city');
+            if (!Schema::hasColumn('city_images', 'names')) {
+                $table->json('names')->nullable()->after('city');
+            }
         });
     }
 

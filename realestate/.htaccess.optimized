@@ -1,0 +1,177 @@
+<IfModule mod_rewrite.c>
+    # Habilitar motor de reescritura
+    RewriteEngine On
+    RewriteBase /
+
+    # Evitar procesar solicitudes de archivos y directorios reales
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !\.html$ [NC]
+    RewriteCond %{REQUEST_URI} !\.css$ [NC]
+    RewriteCond %{REQUEST_URI} !\.js$ [NC]
+    RewriteCond %{REQUEST_URI} !\.png$ [NC]
+    RewriteCond %{REQUEST_URI} !\.jpg$ [NC]
+    RewriteCond %{REQUEST_URI} !\.jpeg$ [NC]
+    RewriteCond %{REQUEST_URI} !\.gif$ [NC]
+    RewriteCond %{REQUEST_URI} !\.svg$ [NC]
+    RewriteCond %{REQUEST_URI} !\.ico$ [NC]
+    RewriteCond %{REQUEST_URI} !\.woff$ [NC]
+    RewriteCond %{REQUEST_URI} !\.woff2$ [NC]
+    RewriteCond %{REQUEST_URI} !\.ttf$ [NC]
+    RewriteCond %{REQUEST_URI} !\.eot$ [NC]
+    RewriteCond %{REQUEST_URI} !\.webp$ [NC]
+
+    # Reescribir URLs dinámicas
+    RewriteRule ^properties-details/([^/]+)/?$ properties-details/[slug]/index.html [L]
+    RewriteRule ^agent-details/([^/]+)/?$ agent-details/[slug]/index.html [L]
+    RewriteRule ^project-details/([^/]+)/?$ project-details/[slug]/index.html [L]
+    RewriteRule ^article-details/([^/]+)/?$ article-details/[slug]/index.html [L]
+    RewriteRule ^properties/categories/([^/]+)/?$ properties/categories/[slug]/index.html [L]
+    RewriteRule ^properties/city/([^/]+)/?$ properties/city/[slug]/index.html [L]
+
+    # Reescribir rutas estáticas (sin trailing slash a index.html)
+    RewriteRule ^about-us/?$ about-us/index.html [L]
+    RewriteRule ^all-categories/?$ all-categories/index.html [L]
+    RewriteRule ^all-agents/?$ all-agents/index.html [L]
+    RewriteRule ^all-projects/?$ all-projects/index.html [L]
+    RewriteRule ^articles/?$ articles/index.html [L]
+    RewriteRule ^contact-us/?$ contact-us/index.html [L]
+    RewriteRule ^featured-properties/?$ featured-properties/index.html [L]
+    RewriteRule ^most-viewed-properties/?$ most-viewed-properties/index.html [L]
+    RewriteRule ^most-favorite-properties/?$ most-favorite-properties/index.html [L]
+    RewriteRule ^privacy-policy/?$ privacy-policy/index.html [L]
+    RewriteRule ^properties/all-properties/?$ properties/all-properties/index.html [L]
+    RewriteRule ^properties-nearby-city/?$ properties-nearby-city/index.html [L]
+    RewriteRule ^search/?$ search/index.html [L]
+    RewriteRule ^subscription-plan/?$ subscription-plan/index.html [L]
+    RewriteRule ^terms-and-condition/?$ terms-and-condition/index.html [L]
+    RewriteRule ^user/?$ user/index.html [L]
+    RewriteRule ^user-register/?$ user-register/index.html [L]
+    RewriteRule ^user/advertisement/?$ user/advertisement/index.html [L]
+    RewriteRule ^user/dashboard/?$ user/dashboard/index.html [L]
+    RewriteRule ^user/edit-property/?$ user/edit-property/index.html [L]
+    RewriteRule ^user/add-project/?$ user/add-project/index.html [L]
+    RewriteRule ^user/edit-project/?$ user/edit-project/index.html [L]
+    RewriteRule ^user/favorites-properties/?$ user/favorites-properties/index.html [L]
+    RewriteRule ^user/notifications/?$ user/notifications/index.html [L]
+    RewriteRule ^user/profile/?$ user/profile/index.html [L]
+    RewriteRule ^user/personalize-feed/?$ user/personalize-feed/index.html [L]
+    RewriteRule ^user/projects/?$ user/projects/index.html [L]
+    RewriteRule ^user/properties/?$ user/properties/index.html [L]
+    RewriteRule ^user/subscription/?$ user/subscription/index.html [L]
+    RewriteRule ^user/transaction-history/?$ user/transaction-history/index.html [L]
+
+    # Ruta raíz
+    RewriteRule ^$ /index.html [L]
+
+    # Fallback a 404
+    RewriteRule ^(.*)$ /404/404.html [L]
+
+</IfModule>
+
+# ============================================================
+# CACHÉ Y COMPRESIÓN
+# ============================================================
+
+# Caché para archivos estáticos
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresDefault "access plus 10 days"
+    
+    # Imágenes
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    ExpiresByType image/x-icon "access plus 1 month"
+    
+    # CSS y JavaScript
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    
+    # Fuentes
+    ExpiresByType font/truetype "access plus 1 month"
+    ExpiresByType font/opentype "access plus 1 month"
+    ExpiresByType application/x-font-ttf "access plus 1 month"
+    ExpiresByType application/x-font-otf "access plus 1 month"
+    ExpiresByType application/x-font-woff "access plus 1 month"
+    ExpiresByType application/x-font-woff2 "access plus 1 month"
+    ExpiresByType application/font-woff "access plus 1 month"
+    
+    # HTML (no cachear, siempre fresco)
+    ExpiresByType text/html "access plus 0 days"
+</IfModule>
+
+# Compresión Gzip
+<IfModule mod_deflate.c>
+    # Compresión de archivos de texto
+    AddOutputFilterByType DEFLATE text/html
+    AddOutputFilterByType DEFLATE text/plain
+    AddOutputFilterByType DEFLATE text/xml
+    AddOutputFilterByType DEFLATE text/css
+    AddOutputFilterByType DEFLATE text/javascript
+    AddOutputFilterByType DEFLATE application/xml
+    AddOutputFilterByType DEFLATE application/xhtml+xml
+    AddOutputFilterByType DEFLATE application/rss+xml
+    AddOutputFilterByType DEFLATE application/atom+xml
+    AddOutputFilterByType DEFLATE application/javascript
+    AddOutputFilterByType DEFLATE application/x-javascript
+    
+    # Fuentes
+    AddOutputFilterByType DEFLATE font/truetype
+    AddOutputFilterByType DEFLATE font/opentype
+    AddOutputFilterByType DEFLATE application/x-font-ttf
+    AddOutputFilterByType DEFLATE application/x-font-otf
+    AddOutputFilterByType DEFLATE application/x-font-woff
+    AddOutputFilterByType DEFLATE application/x-font-woff2
+    
+    # Excluir algunas extensiones
+    SetEnvIfNoCase Request_URI \.(?:gif|jpe?g|png|webp)$ no-gzip
+</IfModule>
+
+# ============================================================
+# HEADERS DE SEGURIDAD Y SEO
+# ============================================================
+
+<IfModule mod_headers.c>
+    # Prevenir MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Clickjacking protection
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # XSS Protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    
+    # Content Security Policy (ajustar según necesidad)
+    Header set Content-Security-Policy "default-src 'self' https: data: 'unsafe-inline' 'unsafe-eval' *.googleapis.com *.gstatic.com cdn.jsdelivr.net pagead2.googlesyndication.com;" env=!SKIP_CSP
+</IfModule>
+
+# ============================================================
+# SEGURIDAD ADICIONAL
+# ============================================================
+
+# Deshabilitar acceso a archivos sensibles
+<FilesMatch "\.env|\.git|\.gitignore|\.htaccess|wp-config\.php">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Permitir acceso a directorios públicos
+<Directory /public_html>
+    Options -Indexes +FollowSymLinks
+    AllowOverride All
+    <IfModule mod_authz_core.c>
+        Require all granted
+    </IfModule>
+</Directory>

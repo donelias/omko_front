@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('parameters', function (Blueprint $table) {
-            $table->json('names')->nullable()->after('name')->comment('JSON column for multilingual parameter names');
+            if (!Schema::hasColumn('parameters', 'names')) {
+                $table->json('names')->nullable()->after('name')->comment('JSON column for multilingual parameter names');
+            }
         });
     }
 

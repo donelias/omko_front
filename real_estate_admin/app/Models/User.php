@@ -46,6 +46,46 @@ class User extends Authenticatable
     ];
 
 
+    // ============================================
+    // RELACIONES
+    // ============================================
+
+    /**
+     * Citas donde este usuario es el cliente
+     */
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'user_id');
+    }
+
+    /**
+     * Citas donde este usuario es el agente
+     */
+    public function agentAppointments()
+    {
+        return $this->hasMany(Appointment::class, 'agent_id');
+    }
+
+    /**
+     * Disponibilidades del agente
+     */
+    public function availabilities()
+    {
+        return $this->hasMany(AgentAvailability::class, 'agent_id');
+    }
+
+    /**
+     * Períodos de indisponibilidad del agente
+     */
+    public function unavailabilities()
+    {
+        return $this->hasMany(AgentUnavailability::class, 'agent_id');
+    }
+
+    // ============================================
+    // MÉTODOS
+    // ============================================
+
     public function isActive()
     {
         if ($this->status == 1) {

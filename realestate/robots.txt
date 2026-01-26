@@ -1,0 +1,57 @@
+# OMKO Real Estate - robots.txt
+# Archivo de configuración para buscadores
+
+User-agent: *
+Allow: /
+Allow: /_next/static/
+Allow: /css/
+Allow: /images/
+Allow: /*.js
+Allow: /*.css
+Allow: /*.xml
+Allow: /*.html
+
+# Desallow directorios protegidos
+Disallow: /user-register/
+Disallow: /user/
+Disallow: /payment/
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /*.json$
+Disallow: /api/
+Disallow: /.well-known/
+Disallow: /config/
+
+# Parámetros de rastreo
+Crawl-delay: 1
+Request-rate: 30/60
+
+# Configuración específica por motor de búsqueda
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+# Bots a evitar
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /
+
+# Sitemaps
+Sitemap: https://realestate.omko.do/sitemap.xml
+Sitemap: https://realestate.omko.do/sitemap-pages.xml
+Sitemap: https://realestate.omko.do/sitemap-properties.xml
+Sitemap: https://realestate.omko.do/sitemap-agents.xml
+Sitemap: https://realestate.omko.do/sitemap-articles.xml

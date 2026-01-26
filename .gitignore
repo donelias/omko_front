@@ -1,0 +1,51 @@
+# Laravel
+/vendor/
+/node_modules/
+/.env
+/.env.local
+/.env.*.local
+/storage/logs/*
+!/storage/logs/.gitkeep
+/bootstrap/cache/*
+!/bootstrap/cache/.gitkeep
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Compiled files
+*.class
+*.pyc
+
+# Testing
+/coverage/
+.phpunit.result.cache
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+_omko.do.zip
+adminrealestate.zip
+real_estate_admin.zip
+realestate.zip
+
+# Downloaded backups
+Descargado desde hostinger/
+
+# Local deployment scripts (for production use)
+launch-dev.sh
+start-dev.sh
+test_production_connectivity.sh
+pre_deploy_check.sh
+
+# Generated documentation (keep these but don't need in tracking)
+# BACKEND_ACTIVATION_GUIDE.md
+# CONNECTIVITY_STATUS_REPORT.md
+# DEPLOYMENT_CHECKLIST.md

@@ -1,0 +1,17 @@
+{
+  "name": "realestate",
+  "version": "1.0.0",
+  "main": "api-config.js",
+  "scripts": {
+    "dev": "http-server . -p 3000 -c-1 --cors",
+    "start": "http-server . -p 3000 --cors",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "http-server": "^14.1.1"
+  }
+}

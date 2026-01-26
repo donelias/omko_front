@@ -180,6 +180,16 @@ class Property extends Model
         return $this->hasMany(Advertisement::class);
     }
 
+    public function appointments()
+    {
+        return $this->hasMany(Appointment::class, 'property_id');
+    }
+
+    public function views()
+    {
+        return $this->hasMany(PropertyView::class, 'property_id');
+    }
+
     public function getGalleryAttribute()
     {
         $data = PropertyImages::select('id', 'image')->where('propertys_id', $this->id)->get();
