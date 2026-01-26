@@ -17,137 +17,106 @@ class AdminAppointmentController extends Controller
         if (!has_permissions('read', 'appointments')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-        return view('appointments.index');
+        $appointments = Appointment::with(['user', 'property'])->paginate(15);
+        return view('admin.appointments.index', compact('appointments'));
     }
 
     /**
-     * Get appointments list (for datatables)
+     * Show single appointment
      */
-    public function show(Request $request)
+    public function show(Appointment $appointment)
     {
         if (!has_permissions('read', 'appointments')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-
-        $offset = $request->input('offset', 0);
-        $limit = $request->input('limit', 15);
-        $sort = $request->input('sort', 'appointment_date');
-        $order = $request->input('order', 'DESC');
-
-        $query = Appointment::query();
-
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        if ($request->filled('agent_id')) {
-            $query->where('agent_id', $request->agent_id);
-        }
-
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            })->orWhereHas('agent', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
-            });
-        }
-
-        $total = $query->count();
-
-        $appointments = $query->with(['user', 'agent', 'property'])
-                             ->orderBy($sort, $order)
-                             ->skip($offset)
-                             ->take($limit)
-                             ->get();
-
-        return response()->json([
-            'total' => $total,
-            'rows' => $appointments
-        ]);
+        return view('admin.appointments.show', compact('appointment'));
     }
 
     /**
-     * Update appointment status (admin)
+     * Show edit form
      */
-    public function updateStatus(Request $request)
+    public function edit(Appointment $appointment)
     {
         if (!has_permissions('update', 'appointments')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
+        }
+        return view('admin.appointments.edit', compact('appointment'));
+    }
+
+    /**
+     * Update appointment
+     */
+    public function update(Request $request, Appointment $appointment)
+    {
+        if (!has_permissions('update', 'appointments')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
 
         $validated = $request->validate([
-            'appointment_id' => 'required|integer|exists:appointments,id',
-            'status' => 'required|in:scheduled,confirmed,completed,cancelled,no_show,rescheduled',
+            'status' => 'required|in:pending,confirmed,completed,cancelled',
         ]);
 
         try {
-            Appointment::where('id', $validated['appointment_id'])
-                ->update(['status' => $validated['status']]);
-
-            return ResponseService::successResponse(trans('Estado de cita actualizado exitosamente'));
+            $appointment->update($validated);
+            return redirect()->route('appointments.index')->with('success', trans('Appointment updated successfully'));
         } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al actualizar la cita'));
+            return redirect()->back()->with('error', trans('Error updating appointment'));
         }
     }
 
     /**
-     * Cancel appointment (admin)
+     * Delete appointment
      */
-    public function cancel(Request $request)
+    public function destroy(Appointment $appointment)
     {
-        if (!has_permissions('update', 'appointments')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        if (!has_permissions('delete', 'appointments')) {
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
 
-        $validated = $request->validate([
-            'appointment_id' => 'required|integer|exists:appointments,id',
-            'reason' => 'nullable|string|max:500',
-        ]);
-
         try {
-            Appointment::where('id', $validated['appointment_id'])
-                ->update([
-                    'status' => 'cancelled',
-                ]);
-
-            return ResponseService::successResponse(trans('Cita cancelada exitosamente'));
+            $appointment->delete();
+            return redirect()->route('appointments.index')->with('success', trans('Appointment deleted successfully'));
         } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al cancelar la cita'));
+            return redirect()->back()->with('error', trans('Error deleting appointment'));
         }
     }
 
     /**
      * Export appointments to CSV
      */
-    public function export(Request $request)
+    public function exportCsv(Request $request)
     {
         if (!has_permissions('read', 'appointments')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
 
         try {
-            $appointments = Appointment::with(['user', 'agent', 'property'])
+            $appointments = Appointment::with(['user', 'property'])
                 ->when($request->filled('status'), function ($q) use ($request) {
                     return $q->where('status', $request->status);
                 })
-                ->when($request->filled('agent_id'), function ($q) use ($request) {
-                    return $q->where('agent_id', $request->agent_id);
+                ->when($request->filled('date_from'), function ($q) use ($request) {
+                    return $q->whereDate('appointment_date', '>=', $request->date_from);
+                })
+                ->when($request->filled('date_to'), function ($q) use ($request) {
+                    return $q->whereDate('appointment_date', '<=', $request->date_to);
                 })
                 ->get();
             
-            $csv = "ID,Usuario,Agente,Propiedad,Fecha,Hora,Estado\n";
+            $csv = "ID,User,Property,Date,Time,Status,Created\n";
             
             foreach ($appointments as $apt) {
-                $csv .= "{$apt->id},{$apt->user->name},{$apt->agent->name},{$apt->property->title},{$apt->appointment_date},{$apt->appointment_time},{$apt->status}\n";
+                $user = $apt->user ? $apt->user->first_name . ' ' . $apt->user->last_name : '-';
+                $property = $apt->property ? $apt->property->name : '-';
+                $csv .= "{$apt->id},\"{$user}\",\"{$property}\",{$apt->appointment_date},{$apt->appointment_time},{$apt->status},{$apt->created_at}\n";
             }
 
             return response($csv, 200, [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="appointments.csv"',
+                'Content-Type' => 'text/csv; charset=utf-8',
+                'Content-Disposition' => 'attachment; filename="appointments-' . date('Y-m-d') . '.csv"',
             ]);
         } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al exportar citas'));
+            return redirect()->back()->with('error', trans('Error exporting appointments'));
         }
     }
 }

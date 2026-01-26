@@ -257,4 +257,6 @@ class PackageFeatureController extends Controller
 
             return response()->json(['success' => true, 'message' => trans('Características actualizadas')]);
         } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => trans('Error al actualizar')], 500);
+            return response()->json(['success' => false, 'message' => trans('Error al actualizar')], 500);        }
+    }
+}
