@@ -17,7 +17,8 @@ class HomepageSectionController extends Controller
         if (!has_permissions('read', 'homepage_sections')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-        return view('homepage-sections.index');
+        $sections = HomepageSection::orderBy('order')->paginate(15);
+        return view('admin.homepage-sections.index', compact('sections'));
     }
 
     /**
@@ -28,17 +29,7 @@ class HomepageSectionController extends Controller
         if (!has_permissions('create', 'homepage_sections')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-        $sectionTypes = [
-            'hero' => 'Hero Banner',
-            'featured_properties' => 'Propiedades Destacadas',
-            'categories' => 'Categorías',
-            'testimonials' => 'Testimonios',
-            'blog' => 'Blog',
-            'call_to_action' => 'Llamada a la Acción',
-            'partners' => 'Socios',
-            'newsletter' => 'Newsletter',
-        ];
-        return view('homepage-sections.create', compact('sectionTypes'));
+        return view('admin.homepage-sections.form');
     }
 
     /**
@@ -47,32 +38,23 @@ class HomepageSectionController extends Controller
     public function store(Request $request)
     {
         if (!has_permissions('create', 'homepage_sections')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
 
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'type' => 'required|string',
             'content' => 'required|string',
-            'image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:10240',
-            'order' => 'required|integer|min:0',
-            'status' => 'boolean',
-            'settings' => 'nullable|json',
+            'order' => 'integer|min:0',
+            'background_color' => 'nullable|string',
+            'is_active' => 'boolean',
         ]);
 
         try {
-            $section = new HomepageSection($validated);
-
-            if ($request->hasFile('image')) {
-                $path = $request->file('image')->store('homepage-sections', 'public');
-                $section->image = $path;
-            }
-
-            $section->save();
-
-            return ResponseService::successResponse(trans('Sección creada exitosamente'));
+            $section = HomepageSection::create($validated);
+            return redirect()->route('homepage-sections.index')->with('success', trans('Section created successfully'));
         } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al crear la sección'));
+            return redirect()->back()->with('error', trans('Error creating section'));
         }
     }
 
