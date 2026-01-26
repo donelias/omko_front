@@ -17,6 +17,12 @@ class PropertyViewSeeder extends Seeder
         $properties = Property::inRandomOrder()->limit(50)->get();
         $users = User::inRandomOrder()->limit(100)->get();
 
+        // Si no hay propiedades, no ejecutar
+        if ($properties->isEmpty() || $users->isEmpty()) {
+            $this->command->warn('⚠️  No hay propiedades o usuarios para crear vistas');
+            return;
+        }
+
         $devices = ['desktop', 'mobile', 'tablet'];
         $countries = ['DO', 'US', 'MX', 'CO', 'ES', 'AR', 'CL'];
         $browsers = ['Chrome', 'Firefox', 'Safari', 'Edge', 'Opera'];

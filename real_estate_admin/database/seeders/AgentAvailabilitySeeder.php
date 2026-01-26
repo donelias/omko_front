@@ -15,8 +15,20 @@ class AgentAvailabilitySeeder extends Seeder
     {
         $agents = User::where('type', 'agent')->inRandomOrder()->limit(20)->get();
 
+        // Si no hay agentes, no ejecutar
+        if ($agents->isEmpty()) {
+            $this->command->warn('⚠️  No hay agentes para crear disponibilidades');
+            return;
+        }
+
         // Crear horarios de disponibilidad para cada agente (lunes a viernes)
         foreach ($agents as $agent) {
+            // Verificar si ya existen disponibilidades para este agente
+            $existingCount = \App\Models\AgentAvailability::where('agent_id', $agent->id)->count();
+            if ($existingCount > 0) {
+                continue; // Saltar si ya existen
+            }
+
             // Lunes a Viernes: 9 AM a 6 PM con descanso de 1 PM a 2 PM
             foreach (range(0, 4) as $dayOfWeek) {
                 AgentAvailability::create([

@@ -20,6 +20,12 @@ class PaymentTransactionSeeder extends Seeder
         $packages = Package::all();
         $properties = Property::inRandomOrder()->limit(30)->get();
 
+        // Si no hay usuarios, no ejecutar
+        if ($users->isEmpty()) {
+            $this->command->warn('⚠️  No hay usuarios para crear transacciones');
+            return;
+        }
+
         $paymentMethods = [
             PaymentTransaction::METHOD_CREDIT_CARD,
             PaymentTransaction::METHOD_DEBIT_CARD,

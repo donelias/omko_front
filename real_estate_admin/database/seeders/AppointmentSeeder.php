@@ -47,19 +47,16 @@ class AppointmentSeeder extends Seeder
                 'user_id' => $user->id,
                 'agent_id' => $agent->id,
                 'property_id' => $property?->id,
-                'project_plan_id' => null,
+                'project_id' => null,
                 'meeting_type' => $meetingTypes[array_rand($meetingTypes)],
-                'scheduled_at' => $appointmentDate,
-                'scheduled_until' => $appointmentDate->copy()->addHour(),
+                'appointment_date' => $appointmentDate->toDateString(),
+                'appointment_time' => $appointmentDate->toDateTime(),
+                'duration_minutes' => rand(30, 120),
+                'is_virtual' => (bool)rand(0, 1),
+                'location' => rand(0, 1) ? 'Downtown Office' : 'Property Address',
+                'notes' => rand(0, 1) ? 'Important property viewing appointment' : null,
                 'status' => $status,
-                'contents' => json_encode([
-                    'en' => 'Appointment for property viewing and discussion',
-                    'es' => 'Cita para visualización de propiedad y discusión',
-                ]),
-                'notes' => rand(0, 1) ? 'Important meeting regarding property details' : null,
-                'completed_at' => in_array($status, [Appointment::STATUS_COMPLETED, Appointment::STATUS_NO_SHOW])
-                    ? $appointmentDate->copy()->addHour()
-                    : null,
+                'color' => '#' . str_pad(dechex(mt_rand(0, 0xFFFFFF)), 6, '0', STR_PAD_LEFT),
                 'created_at' => now()->subDays(rand(0, 90)),
             ]);
         }
