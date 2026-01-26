@@ -2,79 +2,92 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
 use App\Models\Appointment;
 use Illuminate\Http\Request;
+use App\Services\ResponseService;
 
 class AppointmentNotificationExampleController extends Controller
 {
     /**
      * Send notification example to user
      */
-    public function sendUserNotification(Appointment $appointment)
+    public function sendUserNotification(Request $request)
     {
+        if (!has_permissions('create', 'notifications')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         try {
+            $appointment = Appointment::findOrFail($request->input('appointment_id'));
+            
             // Example: Send appointment confirmation notification
-            $message = "Tu cita ha sido confirmada para {$appointment->date} a las {$appointment->time}";
+            // Implementar canal de notificación (Email, SMS, Push, etc.)
             
-            // You can implement different notification channels here
-            // Email, SMS, Push notifications, etc.
-            
-            return redirect()->back()
-                ->with('success', 'Notificación enviada al usuario');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Error al enviar notificación: ' . $e->getMessage());
+            return ResponseService::successResponse(trans('Notificación enviada al usuario'));
+        } catch (Exception $e) {
+            return ResponseService::errorResponse(trans('Error al enviar notificación'));
         }
     }
 
     /**
      * Send notification example to agent
      */
-    public function sendAgentNotification(Appointment $appointment)
+    public function sendAgentNotification(Request $request)
     {
+        if (!has_permissions('create', 'notifications')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         try {
-            // Example: Send appointment notification to agent
-            $message = "Nueva cita de {$appointment->user->name} para {$appointment->date} a las {$appointment->time}";
+            $appointment = Appointment::findOrFail($request->input('appointment_id'));
             
-            return redirect()->back()
-                ->with('success', 'Notificación enviada al agente');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Error al enviar notificación: ' . $e->getMessage());
+            // Example: Send appointment notification to agent
+            
+            return ResponseService::successResponse(trans('Notificación enviada al agente'));
+        } catch (Exception $e) {
+            return ResponseService::errorResponse(trans('Error al enviar notificación'));
         }
     }
 
     /**
      * Send reminder notification
      */
-    public function sendReminder(Appointment $appointment)
+    public function sendReminder(Request $request)
     {
+        if (!has_permissions('create', 'notifications')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         try {
-            // Example: Send appointment reminder
-            $message = "Recordatorio: Tu cita es mañana a las {$appointment->time}";
+            $appointment = Appointment::findOrFail($request->input('appointment_id'));
             
-            return redirect()->back()
-                ->with('success', 'Recordatorio enviado exitosamente');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Error al enviar recordatorio: ' . $e->getMessage());
+            // Example: Send appointment reminder
+            
+            return ResponseService::successResponse(trans('Recordatorio enviado exitosamente'));
+        } catch (Exception $e) {
+            return ResponseService::errorResponse(trans('Error al enviar recordatorio'));
         }
     }
 
     /**
      * Send cancellation notification
      */
-    public function sendCancellationNotification(Appointment $appointment)
+    public function sendCancellationNotification(Request $request)
     {
+        if (!has_permissions('create', 'notifications')) {
+            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+        }
+
         try {
-            // Example: Send appointment cancellation notification
-            $message = "Tu cita del {$appointment->date} ha sido cancelada";
+            $appointment = Appointment::findOrFail($request->input('appointment_id'));
             
-            return redirect()->back()
-                ->with('success', 'Notificación de cancelación enviada');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->with('error', 'Error al enviar notificación: ' . $e->getMessage());
+            // Example: Send appointment cancellation notification
+            
+            return ResponseService::successResponse(trans('Notificación de cancelación enviada'));
+        } catch (Exception $e) {
+            return ResponseService::errorResponse(trans('Error al enviar notificación'));
         }
     }
 }
+

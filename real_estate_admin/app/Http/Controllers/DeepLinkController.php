@@ -2,26 +2,68 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
+use App\Models\Property;
+use App\Models\User;
+use App\Models\Category;
+use App\Models\Article;
+use App\Models\Appointment;
+use App\Models\ProjectPlans;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 class DeepLinkController extends Controller
 {
     /**
      * Handle deep link for property
+     * Redirect to property detail page or API response
      */
     public function property($propertyId)
     {
-        $property = \App\Models\Property::findOrFail($propertyId);
-        return redirect()->route('properties.show', $property->id);
+        try {
+            $property = Property::findOrFail($propertyId);
+            
+            // If API request, return JSON
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'property',
+                    'data' => $property->load(['category', 'views', 'reviews'])
+                ]);
+            }
+            
+            return redirect()->route('properties.show', $property->id);
+        } catch (Exception $e) {
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => trans('Propiedad no encontrada')], 404);
+            }
+            return redirect('/')->with('error', trans('Propiedad no encontrada'));
+        }
     }
 
     /**
-     * Handle deep link for agent
+     * Handle deep link for agent/user
      */
     public function agent($agentId)
     {
-        $agent = \App\Models\User::findOrFail($agentId);
-        return redirect()->route('users.profile', $agent->id);
+        try {
+            $agent = User::where('id', $agentId)->where('type', 'agent')->firstOrFail();
+            
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'agent',
+                    'data' => $agent->load(['properties', 'agentAppointments'])
+                ]);
+            }
+            
+            return redirect()->route('users.profile', $agent->id);
+        } catch (Exception $e) {
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => trans('Agente no encontrado')], 404);
+            }
+            return redirect('/')->with('error', trans('Agente no encontrado'));
+        }
     }
 
     /**
@@ -29,8 +71,24 @@ class DeepLinkController extends Controller
      */
     public function category($categoryId)
     {
-        $category = \App\Models\Category::findOrFail($categoryId);
-        return redirect()->route('categories.show', $category->id);
+        try {
+            $category = Category::findOrFail($categoryId);
+            
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'category',
+                    'data' => $category
+                ]);
+            }
+            
+            return redirect()->route('categories.show', $category->id);
+        } catch (Exception $e) {
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => trans('Categoría no encontrada')], 404);
+            }
+            return redirect('/')->with('error', trans('Categoría no encontrada'));
+        }
     }
 
     /**
@@ -38,8 +96,24 @@ class DeepLinkController extends Controller
      */
     public function article($articleId)
     {
-        $article = \App\Models\Article::findOrFail($articleId);
-        return redirect()->route('articles.show', $article->id);
+        try {
+            $article = Article::findOrFail($articleId);
+            
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'article',
+                    'data' => $article
+                ]);
+            }
+            
+            return redirect()->route('articles.show', $article->id);
+        } catch (Exception $e) {
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => trans('Artículo no encontrado')], 404);
+            }
+            return redirect('/')->with('error', trans('Artículo no encontrado'));
+        }
     }
 
     /**
@@ -47,8 +121,24 @@ class DeepLinkController extends Controller
      */
     public function appointment($appointmentId)
     {
-        $appointment = \App\Models\Appointment::findOrFail($appointmentId);
-        return redirect()->route('appointments.show', $appointment->id);
+        try {
+            $appointment = Appointment::findOrFail($appointmentId);
+            
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'appointment',
+                    'data' => $appointment->load(['user', 'agent', 'property'])
+                ]);
+            }
+            
+            return redirect()->route('appointments.show', $appointment->id);
+        } catch (Exception $e) {
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => trans('Cita no encontrada')], 404);
+            }
+            return redirect('/')->with('error', trans('Cita no encontrada'));
+        }
     }
 
     /**
@@ -56,7 +146,24 @@ class DeepLinkController extends Controller
      */
     public function project($projectId)
     {
-        $project = \App\Models\Projects::findOrFail($projectId);
-        return redirect()->route('projects.show', $project->id);
+        try {
+            $project = ProjectPlans::findOrFail($projectId);
+            
+            if (request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'type' => 'project',
+                    'data' => $project->load(['projectViews'])
+                ]);
+            }
+            
+            return redirect()->route('projects.show', $project->id);
+        } catch (Exception $e) {
+            if (request()->wantsJson()) {
+                return response()->json(['success' => false, 'message' => trans('Proyecto no encontrado')], 404);
+            }
+            return redirect('/')->with('error', trans('Proyecto no encontrado'));
+        }
     }
 }
+
