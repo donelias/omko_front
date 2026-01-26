@@ -19,29 +19,29 @@ class ReviewRatingController extends Controller
         $query = ReviewRating::query();
 
         if ($request->filled('property_id')) {
-            $query->forProperty($request->property_id);
+            $query = $query->forProperty($request->property_id);
         }
 
         if ($request->filled('agent_id')) {
-            $query->forAgent($request->agent_id);
+            $query = $query->forAgent($request->agent_id);
         }
 
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $query = $query->where('status', $request->status);
         }
 
         if ($request->filled('rating_min')) {
-            $query->ratingAbove($request->rating_min);
+            $query = $query->ratingAbove($request->rating_min);
         }
 
         if ($request->filled('verified_only')) {
-            $query->verifiedPurchase();
+            $query = $query->verifiedPurchase();
         }
 
         if ($request->filled('sort') && $request->sort === 'helpful') {
-            $query->mostHelpful();
+            $query = $query->mostHelpful();
         } else {
-            $query->latest();
+            $query = $query->latest();
         }
 
         $reviews = $query->with(['user', 'property', 'agent'])
@@ -102,7 +102,7 @@ class ReviewRatingController extends Controller
     public function update(Request $request, ReviewRating $review)
     {
         // Solo el autor puede actualizar
-        if ($review->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if (!auth()->check() || ($review->user_id !== auth()->id() && !auth()->user()->is_admin)) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permiso para actualizar esta reseña',
@@ -132,7 +132,7 @@ class ReviewRatingController extends Controller
     public function destroy(ReviewRating $review)
     {
         // Solo el autor o admin pueden eliminar
-        if ($review->user_id !== auth()->id() && !auth()->user()->isAdmin()) {
+        if (!auth()->check() || ($review->user_id !== auth()->id() && !auth()->user()->is_admin)) {
             return response()->json([
                 'success' => false,
                 'message' => 'No tienes permiso para eliminar esta reseña',
@@ -158,9 +158,9 @@ class ReviewRatingController extends Controller
         $query = ReviewRating::forProperty($propertyId)->approved();
 
         if ($request->filled('sort') && $request->sort === 'helpful') {
-            $query->mostHelpful();
+            $query = $query->mostHelpful();
         } else {
-            $query->latest();
+            $query = $query->latest();
         }
 
         $reviews = $query->with('user')
@@ -183,9 +183,9 @@ class ReviewRatingController extends Controller
         $query = ReviewRating::forAgent($agentId)->approved();
 
         if ($request->filled('sort') && $request->sort === 'helpful') {
-            $query->mostHelpful();
+            $query = $query->mostHelpful();
         } else {
-            $query->latest();
+            $query = $query->latest();
         }
 
         $reviews = $query->with('user')
