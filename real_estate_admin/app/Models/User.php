@@ -122,6 +122,70 @@ class User extends Authenticatable
         return $this->hasMany(NewsletterSubscription::class);
     }
 
+    /**
+     * Paquetes de usuario activos
+     */
+    public function userPackages()
+    {
+        return $this->hasMany(UserPackage::class, 'user_id');
+    }
+
+    /**
+     * Usuarios bloqueados por este usuario en chat
+     */
+    public function blockedChatUsers()
+    {
+        return $this->hasMany(BlockedChatUser::class, 'user_id');
+    }
+
+    /**
+     * Usuarios que han bloqueado a este usuario en chat
+     */
+    public function blockedByInChat()
+    {
+        return $this->hasMany(BlockedChatUser::class, 'blocked_user_id');
+    }
+
+    /**
+     * Usuarios bloqueados por este usuario para citas
+     */
+    public function blockedUsersForAppointment()
+    {
+        return $this->hasMany(BlockedUserForAppointment::class, 'user_id');
+    }
+
+    /**
+     * Usuarios que han bloqueado a este usuario para citas
+     */
+    public function blockedByForAppointment()
+    {
+        return $this->hasMany(BlockedUserForAppointment::class, 'blocked_user_id');
+    }
+
+    /**
+     * Preferencias de reserva del agente
+     */
+    public function bookingPreference()
+    {
+        return $this->hasOne(AgentBookingPreference::class, 'agent_id');
+    }
+
+    /**
+     * Horarios extra del agente
+     */
+    public function extraTimeSlots()
+    {
+        return $this->hasMany(AgentExtraTimeSlot::class, 'agent_id');
+    }
+
+    /**
+     * Reportes hechos por este agente
+     */
+    public function reportsMade()
+    {
+        return $this->hasMany(ReportUserByAgent::class, 'agent_id');
+    }
+
     // ============================================
     // MÉTODOS
     // ============================================

@@ -95,6 +95,11 @@ class Appointment extends Model
         return $this->hasMany(AppointmentReschedule::class, 'appointment_id');
     }
 
+    public function extraTimeSlot()
+    {
+        return $this->belongsTo(AgentExtraTimeSlot::class, 'extra_time_slot_id')->nullable();
+    }
+
     // ============================================
     // ACCESORIOS Y MUTADORES (Accessors)
     // ============================================

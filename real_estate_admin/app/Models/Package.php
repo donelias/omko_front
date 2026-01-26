@@ -41,6 +41,11 @@ class Package extends Model
         return $this->hasMany(PaymentTransaction::class, 'package_id');
     }
 
+    public function features()
+    {
+        return $this->hasMany(Feature::class, 'package_id');
+    }
+
     public function getLocalizedName($locale = null)
     {
         $locale = $locale ?? app()->getLocale();

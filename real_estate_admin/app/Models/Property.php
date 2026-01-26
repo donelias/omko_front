@@ -195,6 +195,11 @@ class Property extends Model
         return $this->hasMany(ReviewRating::class, 'property_id');
     }
 
+    public function projectViews()
+    {
+        return $this->hasMany(ProjectView::class, 'project_id');
+    }
+
     public function getGalleryAttribute()
     {
         $data = PropertyImages::select('id', 'image')->where('propertys_id', $this->id)->get();
