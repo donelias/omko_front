@@ -114,6 +114,14 @@ class User extends Authenticatable
         return $this->hasMany(ReviewRating::class, 'agent_id');
     }
 
+    /**
+     * Suscripciones a newsletter
+     */
+    public function newsletterSubscriptions()
+    {
+        return $this->hasMany(NewsletterSubscription::class);
+    }
+
     // ============================================
     // MÉTODOS
     // ============================================
@@ -124,5 +132,21 @@ class User extends Authenticatable
             return true;
         }
         return false;
+    }
+
+    /**
+     * Verifica si el usuario es administrador
+     */
+    public function isAdmin()
+    {
+        return $this->type === 'admin';
+    }
+
+    /**
+     * Verifica si el usuario es agente
+     */
+    public function isAgent()
+    {
+        return $this->type === 'agent';
     }
 }

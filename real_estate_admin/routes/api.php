@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\PropertyViewController;
 use App\Http\Controllers\Api\PaymentTransactionController;
 use App\Http\Controllers\Api\UserPackageLimitController;
 use App\Http\Controllers\Api\ReviewRatingController;
+use App\Http\Controllers\Api\NewsletterSubscriptionController;
 // Fallback to old controller for methods not yet migrated
 use App\Http\Controllers\ApiController;
 
@@ -77,13 +78,19 @@ Route::get('properties/{propertyId}/views/stats', [PropertyViewController::class
 Route::get('properties/most-viewed', [PropertyViewController::class, 'mostViewed']);
 Route::get('properties/most-viewed/month', [PropertyViewController::class, 'mostViewedThisMonth']);
 
+// Newsletter Subscription (Public)
+Route::post('newsletter/subscribe', [NewsletterSubscriptionController::class, 'subscribe']);
+Route::post('newsletter/verify-email', [NewsletterSubscriptionController::class, 'verifyEmail']);
+Route::post('newsletter/unsubscribe', [NewsletterSubscriptionController::class, 'unsubscribe']);
+Route::get('newsletter/check-email', [NewsletterSubscriptionController::class, 'checkEmail']);
+
 // Review Ratings (Public - for viewing)
 Route::get('reviews', [ReviewRatingController::class, 'index']);
-Route::get('reviews/{review}', [ReviewRatingController::class, 'show']);
 Route::get('properties/{propertyId}/reviews', [ReviewRatingController::class, 'getPropertyReviews']);
 Route::get('properties/{propertyId}/reviews/stats', [ReviewRatingController::class, 'propertyReviewStats']);
 Route::get('agents/{agentId}/reviews', [ReviewRatingController::class, 'getAgentReviews']);
 Route::get('agents/{agentId}/reviews/stats', [ReviewRatingController::class, 'agentReviewStats']);
+Route::get('reviews/{review}', [ReviewRatingController::class, 'show']);
 
 });
 
@@ -107,6 +114,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('before-logout', [UserApiController::class, 'beforeLogout']);
     Route::get('get-user-data', [UserApiController::class, 'getUserData']);
     Route::get('get_user_recommendation', [UserApiController::class, 'getUserRecommendation']);
+
+    // ========== NEWSLETTER SUBSCRIPTION ROUTES (Authenticated) ==========
+    Route::get('newsletter/subscriptions', [NewsletterSubscriptionController::class, 'index']);
+    Route::get('newsletter/subscriptions/{subscription}', [NewsletterSubscriptionController::class, 'show']);
+    Route::put('newsletter/subscriptions/{subscription}', [NewsletterSubscriptionController::class, 'update']);
+    Route::delete('newsletter/subscriptions/{subscription}', [NewsletterSubscriptionController::class, 'destroy']);
+    Route::post('newsletter/subscriptions/{subscription}/reactivate', [NewsletterSubscriptionController::class, 'reactivate']);
+    Route::get('newsletter/statistics', [NewsletterSubscriptionController::class, 'statistics']);
+    Route::get('newsletter/active-subscribers', [NewsletterSubscriptionController::class, 'activeSubscribers']);
+    Route::post('newsletter/mark-bounced', [NewsletterSubscriptionController::class, 'markBounced']);
+    Route::post('newsletter/complaint', [NewsletterSubscriptionController::class, 'complaint']);
+    Route::get('newsletter/problematic', [NewsletterSubscriptionController::class, 'problematic']);
 
     // ========== CHAT ROUTES ==========
     Route::post('send_message', [ChatApiController::class, 'sendMessage']);
@@ -187,6 +206,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('user-package-limits/{userPackageLimit}/check-availability', [UserPackageLimitController::class, 'checkAvailability']);
 
     // ========== REVIEW RATING ROUTES ==========
+    Route::get('reviews/pending', [ReviewRatingController::class, 'pending']);
+    Route::get('reviews/flagged', [ReviewRatingController::class, 'flagged']);
     Route::post('reviews', [ReviewRatingController::class, 'store']);
     Route::put('reviews/{review}', [ReviewRatingController::class, 'update']);
     Route::delete('reviews/{review}', [ReviewRatingController::class, 'destroy']);
@@ -197,8 +218,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::patch('reviews/{review}/flag', [ReviewRatingController::class, 'flag']);
     Route::patch('reviews/{review}/feature', [ReviewRatingController::class, 'feature']);
     Route::patch('reviews/{review}/unfeature', [ReviewRatingController::class, 'unfeature']);
-    Route::get('reviews/pending', [ReviewRatingController::class, 'pending']);
-    Route::get('reviews/flagged', [ReviewRatingController::class, 'flagged']);
 
     // ========== INTEREST/FAVORITES ROUTES ==========
     Route::post('add_favourite', [InterestApiController::class, 'addFavourite']);
