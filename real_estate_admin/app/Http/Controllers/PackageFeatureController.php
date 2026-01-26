@@ -6,7 +6,6 @@ use Exception;
 use App\Models\Package;
 use App\Models\Feature;
 use Illuminate\Http\Request;
-use App\Services\ResponseService;
 
 class PackageFeatureController extends Controller
 {
@@ -160,103 +159,5 @@ class PackageFeatureController extends Controller
         } catch (Exception $e) {
             return redirect()->back()->with('error', trans('Error performing bulk action'));
         }
-
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where('name', 'LIKE', "%$search%");
-        }
-
-        $total = $query->count();
-        $features = $query->with('package')
-                          ->orderBy($sort, $order)
-                          ->skip($offset)
-                          ->take($limit)
-                          ->get();
-
-        return response()->json([
-            'total' => $total,
-            'rows' => $features
-        ]);
-    }
-
-    /**
-     * Show edit form
-     */
-    public function edit(Feature $feature)
-    {
-        if (!has_permissions('update', 'packages')) {
-            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
-        }
-        $package = $feature->package;
-        return view('package-features.edit', compact('package', 'feature'));
-    }
-
-    /**
-     * Update feature
-     */
-    public function update(Request $request, Feature $feature)
-    {
-        if (!has_permissions('update', 'packages')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
-        }
-
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'icon' => 'nullable|string|max:255',
-            'value' => 'nullable|string',
-            'is_included' => 'boolean',
-            'order' => 'required|integer|min:0',
-        ]);
-
-        try {
-            $feature->update($validated);
-            return ResponseService::successResponse(trans('Característica actualizada exitosamente'));
-        } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al actualizar la característica'));
-        }
-    }
-
-    /**
-     * Delete feature
-     */
-    public function destroy(Feature $feature)
-    {
-        if (!has_permissions('delete', 'packages')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
-        }
-
-        try {
-            $feature->delete();
-            return ResponseService::successResponse(trans('Característica eliminada exitosamente'));
-        } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al eliminar la característica'));
-        }
-    }
-
-    /**
-     * Bulk update feature status
-     */
-    public function bulkUpdate(Request $request)
-    {
-        if (!has_permissions('update', 'packages')) {
-            return response()->json(['success' => false, 'message' => PERMISSION_ERROR_MSG], 403);
-        }
-
-        $validated = $request->validate([
-            'features' => 'required|array',
-            'features.*.id' => 'required|integer',
-            'features.*.is_included' => 'boolean',
-        ]);
-
-        try {
-            foreach ($validated['features'] as $feature) {
-                Feature::where('id', $feature['id'])
-                    ->update(['is_included' => $feature['is_included'] ?? false]);
-            }
-
-            return response()->json(['success' => true, 'message' => trans('Características actualizadas')]);
-        } catch (Exception $e) {
-            return response()->json(['success' => false, 'message' => trans('Error al actualizar')], 500);        }
     }
 }

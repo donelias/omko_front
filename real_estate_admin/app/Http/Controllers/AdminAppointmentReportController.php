@@ -18,39 +18,33 @@ class AdminAppointmentReportController extends Controller
         if (!has_permissions('read', 'reports')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-        return view('appointment-reports.index');
+        $stats = [];
+        return view('admin.appointment-reports.index', compact('stats'));
     }
 
     /**
-     * Get appointment statistics
+     * Show report details
      */
-    public function statistics(Request $request)
+    public function show(Request $request)
     {
         if (!has_permissions('read', 'reports')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
+        
+        $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
+        $endDate = $request->input('end_date', now()->toDateString());
 
-        try {
-            $startDate = $request->input('start_date', now()->subDays(30)->toDateString());
-            $endDate = $request->input('end_date', now()->toDateString());
+        $stats = [
+            'total_appointments' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])->count(),
+            'completed' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])
+                ->where('status', 'completed')->count(),
+            'cancelled' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])
+                ->where('status', 'cancelled')->count(),
+            'pending' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])
+                ->where('status', 'pending')->count(),
+        ];
 
-            $stats = [
-                'total_appointments' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])->count(),
-                'completed' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])
-                    ->where('status', 'completed')->count(),
-                'cancelled' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])
-                    ->where('status', 'cancelled')->count(),
-                'no_show' => Appointment::whereBetween('appointment_date', [$startDate, $endDate])
-                    ->where('status', 'no_show')->count(),
-            ];
-
-            return response()->json([
-                'success' => true,
-                'data' => $stats
-            ]);
-        } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al obtener estadísticas'));
-        }
+        return view('admin.appointment-reports.show', compact('stats', 'startDate', 'endDate'));
     }
 
     /**
@@ -148,34 +142,5 @@ class AdminAppointmentReportController extends Controller
         } catch (Exception $e) {
             return ResponseService::errorResponse(trans('Error al exportar reporte'));
         }
-    }
-}
-
-    {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
-
-        $query = Appointment::query();
-
-        if ($startDate) {
-            $query->whereDate('created_at', '>=', $startDate);
-        }
-
-        if ($endDate) {
-            $query->whereDate('created_at', '<=', $endDate);
-        }
-
-        $appointments = $query->with(['user', 'agent', 'property'])->get();
-
-        $csv = "ID,Usuario,Agente,Propiedad,Fecha,Hora,Estado,Creado\n";
-
-        foreach ($appointments as $apt) {
-            $csv .= "\"{$apt->id}\",\"{$apt->user->name}\",\"{$apt->agent->name}\",\"{$apt->property->title}\",\"{$apt->date}\",\"{$apt->time}\",\"{$apt->status}\",\"{$apt->created_at}\"\n";
-        }
-
-        return response($csv, 200, [
-            'Content-Type' => 'text/csv; charset=utf-8',
-            'Content-Disposition' => 'attachment; filename="appointment-report.csv"',
-        ]);
     }
 }
