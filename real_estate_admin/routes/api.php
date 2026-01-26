@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\AgentUnavailabilityController;
 use App\Http\Controllers\Api\PropertyViewController;
 use App\Http\Controllers\Api\PaymentTransactionController;
 use App\Http\Controllers\Api\UserPackageLimitController;
+use App\Http\Controllers\Api\ReviewRatingController;
 // Fallback to old controller for methods not yet migrated
 use App\Http\Controllers\ApiController;
 
@@ -75,6 +76,14 @@ Route::post('properties/{propertyId}/view', [PropertyViewController::class, 'rec
 Route::get('properties/{propertyId}/views/stats', [PropertyViewController::class, 'propertyViewsStats']);
 Route::get('properties/most-viewed', [PropertyViewController::class, 'mostViewed']);
 Route::get('properties/most-viewed/month', [PropertyViewController::class, 'mostViewedThisMonth']);
+
+// Review Ratings (Public - for viewing)
+Route::get('reviews', [ReviewRatingController::class, 'index']);
+Route::get('reviews/{review}', [ReviewRatingController::class, 'show']);
+Route::get('properties/{propertyId}/reviews', [ReviewRatingController::class, 'getPropertyReviews']);
+Route::get('properties/{propertyId}/reviews/stats', [ReviewRatingController::class, 'propertyReviewStats']);
+Route::get('agents/{agentId}/reviews', [ReviewRatingController::class, 'getAgentReviews']);
+Route::get('agents/{agentId}/reviews/stats', [ReviewRatingController::class, 'agentReviewStats']);
 
 });
 
@@ -176,6 +185,20 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('user-package-limits/near-limit', [UserPackageLimitController::class, 'nearLimit']);
     Route::post('user-package-limits/auto-reset', [UserPackageLimitController::class, 'autoResetDue']);
     Route::patch('user-package-limits/{userPackageLimit}/check-availability', [UserPackageLimitController::class, 'checkAvailability']);
+
+    // ========== REVIEW RATING ROUTES ==========
+    Route::post('reviews', [ReviewRatingController::class, 'store']);
+    Route::put('reviews/{review}', [ReviewRatingController::class, 'update']);
+    Route::delete('reviews/{review}', [ReviewRatingController::class, 'destroy']);
+    Route::post('reviews/{review}/helpful', [ReviewRatingController::class, 'markHelpful']);
+    Route::post('reviews/{review}/unhelpful', [ReviewRatingController::class, 'markUnhelpful']);
+    Route::patch('reviews/{review}/approve', [ReviewRatingController::class, 'approve']);
+    Route::patch('reviews/{review}/reject', [ReviewRatingController::class, 'reject']);
+    Route::patch('reviews/{review}/flag', [ReviewRatingController::class, 'flag']);
+    Route::patch('reviews/{review}/feature', [ReviewRatingController::class, 'feature']);
+    Route::patch('reviews/{review}/unfeature', [ReviewRatingController::class, 'unfeature']);
+    Route::get('reviews/pending', [ReviewRatingController::class, 'pending']);
+    Route::get('reviews/flagged', [ReviewRatingController::class, 'flagged']);
 
     // ========== INTEREST/FAVORITES ROUTES ==========
     Route::post('add_favourite', [InterestApiController::class, 'addFavourite']);

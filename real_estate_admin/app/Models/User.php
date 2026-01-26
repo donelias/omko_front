@@ -98,6 +98,22 @@ class User extends Authenticatable
         return $this->hasMany(UserPackageLimit::class, 'user_id');
     }
 
+    /**
+     * Reseñas escritas por el usuario
+     */
+    public function reviews()
+    {
+        return $this->hasMany(ReviewRating::class, 'user_id');
+    }
+
+    /**
+     * Reseñas del usuario como agente
+     */
+    public function agentReviews()
+    {
+        return $this->hasMany(ReviewRating::class, 'agent_id');
+    }
+
     // ============================================
     // MÉTODOS
     // ============================================

@@ -190,6 +190,11 @@ class Property extends Model
         return $this->hasMany(PropertyView::class, 'property_id');
     }
 
+    public function reviews()
+    {
+        return $this->hasMany(ReviewRating::class, 'property_id');
+    }
+
     public function getGalleryAttribute()
     {
         $data = PropertyImages::select('id', 'image')->where('propertys_id', $this->id)->get();
