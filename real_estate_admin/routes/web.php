@@ -329,6 +329,33 @@ Route::get('/js/lang', static function () {
     exit();
 })->name('assets.lang');
 
+// ====== NEW CONTROLLERS ROUTES ======
+// Ad Banners Management
+Route::resource('admin/ad-banners', \App\Http\Controllers\AdBannerController::class);
+
+// Homepage Sections Management
+Route::resource('admin/homepage-sections', \App\Http\Controllers\HomepageSectionController::class);
+Route::post('admin/homepage-sections/reorder', [\App\Http\Controllers\HomepageSectionController::class, 'reorder'])->name('homepage-sections.reorder');
+
+// Package Features Management
+Route::resource('admin/package-features', \App\Http\Controllers\PackageFeatureController::class);
+Route::post('admin/package-features/bulk-action', [\App\Http\Controllers\PackageFeatureController::class, 'bulkAction'])->name('package-features.bulk-action');
+
+// Admin Appointments Management
+Route::resource('admin/appointments', \App\Http\Controllers\AdminAppointmentController::class);
+Route::get('admin/appointments/export/csv', [\App\Http\Controllers\AdminAppointmentController::class, 'exportCsv'])->name('appointments.export-csv');
+
+// Admin Appointment Reports
+Route::resource('admin/appointment-reports', \App\Http\Controllers\AdminAppointmentReportController::class, ['only' => ['index', 'show']]);
+
+// Appointment Notifications Examples
+Route::resource('admin/appointment-notifications', \App\Http\Controllers\AppointmentNotificationExampleController::class, ['only' => ['index', 'show', 'create', 'store']]);
+
+// Deep Links
+Route::resource('admin/deep-links', \App\Http\Controllers\DeepLinkController::class);
+
+// ====== END NEW CONTROLLERS ROUTES ======
+
 
 // // Add New Migration Route
 // Route::get('migrate', function () {

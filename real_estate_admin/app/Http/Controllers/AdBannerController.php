@@ -18,7 +18,8 @@ class AdBannerController extends Controller
         if (!has_permissions('read', 'ad_banners')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-        return view('ad-banners.index');
+        $banners = AdBanner::paginate(15);
+        return view('admin.ad-banners.index', compact('banners'));
     }
 
     /**
@@ -29,8 +30,7 @@ class AdBannerController extends Controller
         if (!has_permissions('create', 'ad_banners')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-        $categories = Category::where('status', 1)->get();
-        return view('ad-banners.create', compact('categories'));
+        return view('admin.ad-banners.form');
     }
 
     /**
@@ -39,69 +39,43 @@ class AdBannerController extends Controller
     public function store(Request $request)
     {
         if (!has_permissions('create', 'ad_banners')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
 
         $validated = $request->validate([
-            'page' => 'required|in:homepage,property_listing,property_detail',
-            'platform' => 'required|in:app,web',
-            'placement' => 'required|string',
-            'banner_image' => 'required|image|mimes:jpg,jpeg,png,gif|max:10240',
-            'ad_type' => 'required|in:external_link,property,banner_only',
-            'external_link_url' => 'nullable|url|max:255',
-            'property_id' => 'nullable|integer|exists:propertys,id',
-            'duration' => 'required|integer|min:1',
-            'status' => 'boolean',
+            'title' => 'required|string|max:255',
+            'platform' => 'required|in:web,mobile,email',
+            'description' => 'nullable|string',
+            'image_path' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:10240',
+            'link_url' => 'nullable|url',
+            'priority' => 'integer|min:0',
+            'is_active' => 'boolean',
         ]);
 
         try {
             $banner = new AdBanner($validated);
             
-            if ($request->hasFile('banner_image')) {
-                $path = $request->file('banner_image')->store('ad-banners', 'public');
-                $banner->banner_image = $path;
+            if ($request->hasFile('image_path')) {
+                $path = $request->file('image_path')->store('ad-banners', 'public');
+                $banner->image_path = $path;
             }
 
             $banner->save();
-
-            return ResponseService::successResponse(trans('Banner publicitario creado exitosamente'));
+            return redirect()->route('ad-banners.index')->with('success', trans('Ad banner created successfully'));
         } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al crear el banner'));
+            return redirect()->back()->with('error', trans('Error creating ad banner'));
         }
     }
 
     /**
      * Show ad banner
      */
-    public function show(Request $request)
+    public function show(AdBanner $adBanner)
     {
         if (!has_permissions('read', 'ad_banners')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-
-        $offset = $request->input('offset', 0);
-        $limit = $request->input('limit', 10);
-        $sort = $request->input('sort', 'id');
-        $order = $request->input('order', 'DESC');
-
-        $query = AdBanner::query();
-
-        if ($request->filled('search')) {
-            $search = $request->get('search');
-            $query->where('placement', 'LIKE', "%$search%")
-                  ->orWhere('page', 'LIKE', "%$search%");
-        }
-
-        $total = $query->count();
-        $banners = $query->orderBy($sort, $order)
-                         ->skip($offset)
-                         ->take($limit)
-                         ->get();
-
-        return response()->json([
-            'total' => $total,
-            'rows' => $banners
-        ]);
+        return view('admin.ad-banners.show', compact('adBanner'));
     }
 
     /**
@@ -112,8 +86,8 @@ class AdBannerController extends Controller
         if (!has_permissions('update', 'ad_banners')) {
             return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
-        $categories = Category::where('status', 1)->get();
-        return view('ad-banners.edit', compact('adBanner', 'categories'));
+        $banner = $adBanner;
+        return view('admin.ad-banners.form', compact('banner'));
     }
 
     /**
@@ -122,32 +96,29 @@ class AdBannerController extends Controller
     public function update(Request $request, AdBanner $adBanner)
     {
         if (!has_permissions('update', 'ad_banners')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
 
         $validated = $request->validate([
-            'page' => 'required|in:homepage,property_listing,property_detail',
-            'platform' => 'required|in:app,web',
-            'placement' => 'required|string',
-            'banner_image' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:10240',
-            'ad_type' => 'required|in:external_link,property,banner_only',
-            'external_link_url' => 'nullable|url|max:255',
-            'property_id' => 'nullable|integer|exists:propertys,id',
-            'duration' => 'required|integer|min:1',
-            'status' => 'boolean',
+            'title' => 'required|string|max:255',
+            'platform' => 'required|in:web,mobile,email',
+            'description' => 'nullable|string',
+            'image_path' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:10240',
+            'link_url' => 'nullable|url',
+            'priority' => 'integer|min:0',
+            'is_active' => 'boolean',
         ]);
 
         try {
-            if ($request->hasFile('banner_image')) {
-                $path = $request->file('banner_image')->store('ad-banners', 'public');
-                $validated['banner_image'] = $path;
+            if ($request->hasFile('image_path')) {
+                $path = $request->file('image_path')->store('ad-banners', 'public');
+                $validated['image_path'] = $path;
             }
 
             $adBanner->update($validated);
-
-            return ResponseService::successResponse(trans('Banner actualizado exitosamente'));
+            return redirect()->route('ad-banners.index')->with('success', trans('Ad banner updated successfully'));
         } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al actualizar el banner'));
+            return redirect()->back()->with('error', trans('Error updating ad banner'));
         }
     }
 
@@ -157,14 +128,14 @@ class AdBannerController extends Controller
     public function destroy(AdBanner $adBanner)
     {
         if (!has_permissions('delete', 'ad_banners')) {
-            return ResponseService::errorResponse(PERMISSION_ERROR_MSG);
+            return redirect()->back()->with('error', PERMISSION_ERROR_MSG);
         }
 
         try {
             $adBanner->delete();
-            return ResponseService::successResponse(trans('Banner eliminado exitosamente'));
+            return redirect()->route('ad-banners.index')->with('success', trans('Ad banner deleted successfully'));
         } catch (Exception $e) {
-            return ResponseService::errorResponse(trans('Error al eliminar el banner'));
+            return redirect()->back()->with('error', trans('Error deleting ad banner'));
         }
     }
 }
