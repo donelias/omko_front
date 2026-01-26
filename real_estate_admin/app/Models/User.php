@@ -82,6 +82,22 @@ class User extends Authenticatable
         return $this->hasMany(AgentUnavailability::class, 'agent_id');
     }
 
+    /**
+     * Transacciones de pago del usuario
+     */
+    public function paymentTransactions()
+    {
+        return $this->hasMany(PaymentTransaction::class, 'user_id');
+    }
+
+    /**
+     * Límites de paquetes del usuario
+     */
+    public function packageLimits()
+    {
+        return $this->hasMany(UserPackageLimit::class, 'user_id');
+    }
+
     // ============================================
     // MÉTODOS
     // ============================================

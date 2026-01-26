@@ -31,6 +31,16 @@ class Package extends Model
         return $this->hasMany(UserPurchasedPackage::class, 'package_id');
     }
 
+    public function userLimits()
+    {
+        return $this->hasMany(UserPackageLimit::class, 'package_id');
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(PaymentTransaction::class, 'package_id');
+    }
+
     public function getLocalizedName($locale = null)
     {
         $locale = $locale ?? app()->getLocale();

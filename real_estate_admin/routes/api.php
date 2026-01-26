@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\InterestApiController;
 use App\Http\Controllers\Api\AppointmentController;
 use App\Http\Controllers\Api\AgentUnavailabilityController;
 use App\Http\Controllers\Api\PropertyViewController;
+use App\Http\Controllers\Api\PaymentTransactionController;
+use App\Http\Controllers\Api\UserPackageLimitController;
 // Fallback to old controller for methods not yet migrated
 use App\Http\Controllers\ApiController;
 
@@ -144,6 +146,36 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('properties/{propertyId}/views', [PropertyViewController::class, 'propertyViews']);
     Route::get('users/{userId}/property-views', [PropertyViewController::class, 'userViews']);
     Route::delete('properties/{propertyId}/views/cleanup', [PropertyViewController::class, 'cleanup']);
+
+    // ========== PAYMENT TRANSACTION ROUTES ==========
+    Route::get('transactions', [PaymentTransactionController::class, 'index']);
+    Route::post('transactions', [PaymentTransactionController::class, 'store']);
+    Route::get('transactions/{transaction}', [PaymentTransactionController::class, 'show']);
+    Route::put('transactions/{transaction}', [PaymentTransactionController::class, 'update']);
+    Route::delete('transactions/{transaction}', [PaymentTransactionController::class, 'destroy']);
+    Route::get('users/{userId}/transactions', [PaymentTransactionController::class, 'getUserTransactions']);
+    Route::post('transactions/{transaction}/refund', [PaymentTransactionController::class, 'refund']);
+    Route::get('transactions/stats/revenue', [PaymentTransactionController::class, 'revenueStats']);
+    Route::get('transactions/stats/top-spenders', [PaymentTransactionController::class, 'topSpenders']);
+    Route::patch('transactions/{transaction}/mark-as-completed', [PaymentTransactionController::class, 'markAsCompleted']);
+    Route::patch('transactions/{transaction}/mark-as-failed', [PaymentTransactionController::class, 'markAsFailed']);
+    Route::post('transactions/bulk-create', [PaymentTransactionController::class, 'bulkCreate']);
+
+    // ========== USER PACKAGE LIMIT ROUTES ==========
+    Route::get('user-package-limits', [UserPackageLimitController::class, 'index']);
+    Route::post('user-package-limits', [UserPackageLimitController::class, 'store']);
+    Route::get('user-package-limits/{userPackageLimit}', [UserPackageLimitController::class, 'show']);
+    Route::put('user-package-limits/{userPackageLimit}', [UserPackageLimitController::class, 'update']);
+    Route::delete('user-package-limits/{userPackageLimit}', [UserPackageLimitController::class, 'destroy']);
+    Route::get('users/{userId}/package-limits', [UserPackageLimitController::class, 'getUserLimits']);
+    Route::patch('user-package-limits/{userPackageLimit}/increment', [UserPackageLimitController::class, 'incrementUsage']);
+    Route::patch('user-package-limits/{userPackageLimit}/decrement', [UserPackageLimitController::class, 'decrementUsage']);
+    Route::patch('user-package-limits/{userPackageLimit}/reset', [UserPackageLimitController::class, 'resetQuota']);
+    Route::get('user-package-limits/stats/usage', [UserPackageLimitController::class, 'usageStats']);
+    Route::get('user-package-limits/exceeded', [UserPackageLimitController::class, 'exceededLimits']);
+    Route::get('user-package-limits/near-limit', [UserPackageLimitController::class, 'nearLimit']);
+    Route::post('user-package-limits/auto-reset', [UserPackageLimitController::class, 'autoResetDue']);
+    Route::patch('user-package-limits/{userPackageLimit}/check-availability', [UserPackageLimitController::class, 'checkAvailability']);
 
     // ========== INTEREST/FAVORITES ROUTES ==========
     Route::post('add_favourite', [InterestApiController::class, 'addFavourite']);
