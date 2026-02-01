@@ -40,7 +40,7 @@ Route::get('get_nearby_properties', [PropertyApiController::class, 'getNearbyPro
 Route::post('set_property_total_click', [PropertyApiController::class, 'setPropertyClick']);
 
 // User Routes
-Route::post('user_signup', [UserApiController::class, 'signup']);
+Route::post('user_signup', [ApiController::class, 'user_signup']);
 Route::get('get-otp', [UserApiController::class, 'getOtp']);
 Route::get('verify-otp', [UserApiController::class, 'verifyOtp']);
 
