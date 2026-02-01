@@ -23,12 +23,9 @@ class UserPurchasedPackage extends Model
     {
         return $this->morphTo();
     }
+    
     public function package()
     {
         return $this->belongsTo(Package::class);
-    }
-    public function customer()
-    {
-        return $this->belongsTo(Customer::class, 'modal_id');
     }
 }

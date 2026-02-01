@@ -189,10 +189,10 @@ class PackageController extends Controller
         $sort = $request->input('sort', 'sequence');
         $order = $request->input('order', 'ASC');
 
-        $sql = UserPurchasedPackage::with('package')->with('customer')->orderBy($sort, $order);
+        $sql = UserPurchasedPackage::with('package')->with('modal')->orderBy($sort, $order);
         if (isset($_GET['search']) && !empty($_GET['search'])) {
             $search = $_GET['search'];
-            $sql->where('id', 'LIKE', "%$search%")->orwherehas('customer', function ($q1) use ($search) {
+            $sql->where('id', 'LIKE', "%$search%")->orwherehas('modal', function ($q1) use ($search) {
                 $q1->where('name', 'LIKE', "%$search%");
             })->orwherehas('package', function ($q1) use ($search) {
                 $q1->where('name', 'LIKE', "%$search%")->orwhere('duration', 'LIKE', "%$search%");

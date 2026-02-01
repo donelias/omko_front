@@ -61,7 +61,7 @@ class Customer extends Authenticatable
                 Projects::where('added_by', $userId)->delete();
                 Notifications::where('customers_id', $userId)->delete();
                 Advertisement::where('customer_id', $userId)->delete();
-                UserPurchasedPackage::where('modal_id', $userId)->delete();
+                UserPurchasedPackage::where('modal_id', $userId)->where('modal_type', 'App\\Models\\Customer')->delete();
 
                 /** Delete with modal boot events */
                 $properties = Property::where('added_by', $userId)->get();

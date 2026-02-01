@@ -745,7 +745,8 @@ class PropertyApiController extends Controller
      */
     private function getCurrentPackage($userId, $type)
     {
-        return \App\Models\UserPurchasedPackage::where('customer_id', $userId)
+        return \App\Models\UserPurchasedPackage::where('modal_id', $userId)
+            ->where('modal_type', 'App\\Models\\Customer')
             ->where('prop_status', 1)
             ->with('package')
             ->first();

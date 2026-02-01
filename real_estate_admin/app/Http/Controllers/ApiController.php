@@ -180,9 +180,28 @@ class ApiController extends Controller
         if (!$validator->fails()) {
             $type = $request->type;
             $auth_id = $request->auth_id;
+            $email = isset($request->email) ? $request->email : '';
 
-            $user = Customer::where('auth_id', $auth_id)->where('logintype', $type)->get();
-            if ($user->isEmpty()) {
+            // Initialize response
+            $response = [];
+
+            // First, try to find by auth_id and type (existing login)
+            $user = Customer::where('auth_id', $auth_id)->where('logintype', $type)->first();
+            
+            // If not found and email exists, check if user exists by email (for linking accounts)
+            if (!$user && $email) {
+                $user = Customer::where('email', $email)->first();
+                // If found by email, update the auth_id and logintype to support this new login method
+                if ($user) {
+                    $user->auth_id = $auth_id;
+                    $user->logintype = $type;
+                    if ($request->name) $user->name = $request->name;
+                    $user->save();
+                }
+            }
+            
+            // If still no user, create a new one
+            if (!$user) {
                 $saveCustomer = new Customer();
                 $saveCustomer->name = isset($request->name) ? $request->name : '';
                 $saveCustomer->email = isset($request->email) ? $request->email : '';
@@ -199,12 +218,7 @@ class ApiController extends Controller
                 $saveCustomer->latitude = isset($request->latitude) ? $request->latitude : '';
                 $saveCustomer->longitude = isset($request->longitude) ? $request->longitude : '';
                 $saveCustomer->notification = 1;
-                $saveCustomer->about_me = isset($request->about_me) ? $request->about_me : '';
-                $saveCustomer->facebook_id = isset($request->facebook_id) ? $request->facebook_id : '';
-                $saveCustomer->twiiter_id = isset($request->twiiter_id) ? $request->twiiter_id : '';
-                $saveCustomer->instagram_id = isset($request->instagram_id) ? $request->instagram_id : '';
                 $saveCustomer->isActive = '1';
-
 
                 $destinationPath = public_path('images') . config('global.USER_IMG_PATH');
                 if (!is_dir($destinationPath)) {
@@ -240,38 +254,37 @@ class ApiController extends Controller
                     $saveCustomer->update();
                 }
 
-
                 $response['error'] = false;
                 $response['message'] = 'User Register Successfully';
-
-                $credentials = Customer::find($saveCustomer->id);
-                $credentials = Customer::where('auth_id', $auth_id)->where('logintype', $type)->first();
-
                 $response['token'] = $token->plainTextToken;
-                $response['data'] = $credentials;
-            } else {
-                $credentials = Customer::where('auth_id', $auth_id)->where('logintype', $type)->first();
-                if ($credentials->isActive == 0) {
+                $response['data'] = $saveCustomer;
+                $user = $saveCustomer;
+            }
+            
+            // Handle existing user (login)
+            if ($user && $user->id) {
+                if ($user->isActive == 0) {
                     $response['error'] = true;
                     $response['message'] = 'Account Deactivated by Administrative please connect to them';
                     $response['is_active'] = false;
                     return response()->json($response);
                 }
-                $credentials->update();
-                $token = $credentials->createToken('token-name');
-
+                
+                $user->update();
+                $token = $user->createToken('token-name');
 
                 // Update or add FCM ID in UserToken for Current User
                 if ($request->has('fcm_id') && !empty($request->fcm_id)) {
                     Usertokens::updateOrCreate(
                         ['fcm_id' => $request->fcm_id],
-                        ['customer_id' => $credentials->id]
+                        ['customer_id' => $user->id]
                     );
                 }
+                
                 $response['error'] = false;
                 $response['message'] = 'Login Successfully';
                 $response['token'] = $token->plainTextToken;
-                $response['data'] = $credentials;
+                $response['data'] = $user;
             }
         } else {
             $response['error'] = true;
@@ -666,7 +679,9 @@ class ApiController extends Controller
             'property_type'     => 'required',
             'address'           => 'required',
             'title_image'       => 'required|file|max:3000|mimes:jpeg,png,jpg',
-            'three_d_image'     => 'nullable|mimes:jpg,jpeg,png,gif|max:3000',
+            'gallery_images'    => 'nullable|array',
+            'gallery_images.*'  => 'nullable|file|mimes:jpeg,png,jpg|max:3000',
+            'three_d_image'     => 'nullable|file|mimes:jpg,jpeg,png,gif|max:3000',
             'documents.*'       => 'nullable|mimes:pdf,doc,docx,txt|max:5120',
             'price'             => ['required', function ($attribute, $value, $fail) {
                 if ($value > 1000000000000) {
@@ -847,14 +862,16 @@ class ApiController extends Controller
                 if (!is_dir($destinationPath)) {
                     mkdir($destinationPath, 0777, true);
                 }
-                if ($request->hasfile('gallery_images')) {
+                if ($request->hasFile('gallery_images') && is_array($request->file('gallery_images'))) {
                     foreach ($request->file('gallery_images') as $file) {
-                        $name = microtime(true). '.' . $file->extension();
-                        $file->move($destinationPath, $name);
-                        $gallary_image = new PropertyImages();
-                        $gallary_image->image = $name;
-                        $gallary_image->propertys_id = $saveProperty->id;
-                        $gallary_image->save();
+                        if ($file && $file->isValid()) {
+                            $name = microtime(true). '.' . $file->extension();
+                            $file->move($destinationPath, $name);
+                            $gallary_image = new PropertyImages();
+                            $gallary_image->image = $name;
+                            $gallary_image->propertys_id = $saveProperty->id;
+                            $gallary_image->save();
+                        }
                     }
                 }
                 /// END :: UPLOAD GALLERY IMAGE
@@ -904,9 +921,10 @@ class ApiController extends Controller
             }
         } catch (Exception $e) {
             DB::rollback();
+            Log::error('Post Property Error: ' . $e->getMessage() . ' on line ' . $e->getLine());
             $response = array(
                 'error' => true,
-                'message' => 'Something Went Wrong'
+                'message' => 'Error: ' . $e->getMessage()
             );
             return response()->json($response, 500);
         }
@@ -1765,7 +1783,7 @@ class ApiController extends Controller
                 $currentDate = Carbon::now()->format("Y-m-d");
 
                 $loggedInUserId = Auth::guard('sanctum')->user()->id;
-                $user_package = UserPurchasedPackage::where('modal_id', $loggedInUserId)->where(function ($query) use ($currentDate) {
+                $user_package = UserPurchasedPackage::where('modal_id', $loggedInUserId)->where('modal_type', 'App\\Models\\Customer')->where(function ($query) use ($currentDate) {
                     $query->whereDate('start_date', '<=', $currentDate)
                         ->whereDate('end_date', '>=', $currentDate);
                 });
@@ -1896,15 +1914,15 @@ class ApiController extends Controller
         if (!$validator->fails()) {
             $loggedInUserId = Auth::user()->id;
             if (isset($request->flag)) {
-                $user_exists = UserPurchasedPackage::where('modal_id', $loggedInUserId)->get();
+                $user_exists = UserPurchasedPackage::where('modal_id', $loggedInUserId)->where('modal_type', 'App\\Models\\Customer')->get();
                 if ($user_exists) {
-                    UserPurchasedPackage::where('modal_id', $loggedInUserId)->delete();
+                    UserPurchasedPackage::where('modal_id', $loggedInUserId)->where('modal_type', 'App\\Models\\Customer')->delete();
                 }
             }
 
             $package = Package::find($request->package_id);
             $user = Customer::find($loggedInUserId);
-            $data_exists = UserPurchasedPackage::where('modal_id', $loggedInUserId)->get();
+            $data_exists = UserPurchasedPackage::where('modal_id', $loggedInUserId)->where('modal_type', 'App\\Models\\Customer')->get();
             if (count($data_exists) == 0 && $package) {
                 $user_package = new UserPurchasedPackage();
                 $user_package->modal()->associate($user);
@@ -2134,7 +2152,7 @@ class ApiController extends Controller
 
             $current_user = Auth::user()->id;
             $currentDate = Carbon::now()->format("Y-m-d");
-            $current_package = UserPurchasedPackage::where('modal_id', $current_user)->where(function ($query) use ($currentDate) {
+            $current_package = UserPurchasedPackage::where('modal_id', $current_user)->where('modal_type', 'App\\Models\\Customer')->where(function ($query) use ($currentDate) {
                 $query->whereDate('start_date', '<=', $currentDate)
                     ->whereDate('end_date', '>=', $currentDate);
                 })->with(['package' => function ($q) use ($package_type) {
@@ -3175,7 +3193,7 @@ class ApiController extends Controller
 
         if ($package) {
             if ($package->type == "premium_user") {
-                UserPurchasedPackage::where('modal_id', $current_user)->where('package_id', $package->id)->delete();
+                UserPurchasedPackage::where('modal_id', $current_user)->where('modal_type', 'App\\Models\\Customer')->where('package_id', $package->id)->delete();
             }
             $user_package = new UserPurchasedPackage();
 
@@ -3949,7 +3967,7 @@ class ApiController extends Controller
             $loggedInUserId = Auth::user()->id;
 
             // Delete All Packages
-            UserPurchasedPackage::where('modal_id', $loggedInUserId)->delete();
+            UserPurchasedPackage::where('modal_id', $loggedInUserId)->where('modal_type', 'App\\Models\\Customer')->delete();
 
             // Make subscription and is premium status 0 in customer table
             $customerData = Customer::find($loggedInUserId);

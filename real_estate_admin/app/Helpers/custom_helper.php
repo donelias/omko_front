@@ -248,7 +248,7 @@ if (!function_exists('parameterTypesByCategory')) {
 function update_subscription($user_id)
 {
     DB::enableQueryLog();
-    $users_packages = UserPurchasedPackage::with('package')->with('customer')->where('modal_id', $user_id);
+    $users_packages = UserPurchasedPackage::with('package')->with('modal')->where('modal_id', $user_id);
     $result = $users_packages->get();
     if(collect($result)->isNotEmpty()){
         foreach ($result as $key => $row) {
@@ -266,7 +266,7 @@ function update_subscription($user_id)
 
             $package_count = $users_packages->where('prop_status', 1)->orWhere('adv_status', 1)->count();
             if ($package_count == 0) {
-                $Customer = Customer::find($row->customer->id);
+                $Customer = Customer::find($row->modal->id);
 
                 $Customer->subscription = 0;
                 if ($row->package->type == "premium_user") {
@@ -576,6 +576,7 @@ function check_subscription($user, $type, $status)
 {
     DB::enableQueryLog();
     $current_package = UserPurchasedPackage::where('modal_id', $user)
+        ->where('modal_type', 'App\\Models\\Customer')
         // ->with(['package' => function ($q) use ($type) {
         //     $q->select('id', $type)->where($type, '>', 0)->orWhere($type, null);
         // }])
