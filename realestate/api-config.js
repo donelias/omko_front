@@ -3,10 +3,10 @@
 
 // URLs de producción
 const PRODUCTION_CONFIG = {
-  BACKEND_URL: 'https://adminrealestate.omko.do/public',
+  BACKEND_URL: 'https://admin.omko.do',
   FRONTEND_URL: 'https://realestate.omko.do',
-  API_BASE_URL: 'https://adminrealestate.omko.do/public/api',
-  ADMIN_URL: 'https://adminrealestate.omko.do/public'
+  API_BASE_URL: 'https://admin.omko.do/api',
+  ADMIN_URL: 'https://admin.omko.do'
 };
 
 // URLs de desarrollo (para testing local)

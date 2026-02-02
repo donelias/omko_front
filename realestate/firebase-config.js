@@ -50,7 +50,7 @@ export const requestNotificationPermission = async () => {
         
         // Enviar token al backend para guardar en base de datos
         try {
-          const backendUrl = 'https://adminrealestate.omko.do/public';
+          const backendUrl = 'https://admin.omko.do';
           const response = await fetch(`${backendUrl}/api/save-fcm-token`, {
             method: 'POST',
             headers: {

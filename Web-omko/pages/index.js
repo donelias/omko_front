@@ -1,0 +1,54 @@
+import { systemService } from "@/api";
+import Meta from "@/Components/Seo/Meta.jsx";
+// import HomePage from "@/Components/HomePage/index";
+import dynamic from 'next/dynamic'
+
+const HomePage = dynamic(
+  () => import('@/Components/HomePage/index'),
+  { ssr: false })
+
+// Fetch homepage data and SEO settings using systemService
+const fetchDataFromSeo = async (page) => {
+  try {
+    const data = await systemService.getHomepageData();
+    return data;
+  } catch (error) {
+    console.error("Error fetching homepage data:", error);
+    return null;
+  }
+};
+
+const Index = ({ seoData, currentURL }) => {
+  return (
+    <>
+      <Meta
+        title={seoData?.data && seoData.data.length > 0 && seoData.data[0].meta_title}
+        description={seoData?.data && seoData.data.length > 0 && seoData.data[0].meta_description}
+        keywords={seoData?.data && seoData.data.length > 0 && seoData.data[0].meta_keywords}
+        ogImage={seoData?.data && seoData.data.length > 0 && seoData.data[0].meta_image}
+        pathName={currentURL}
+      />
+      <HomePage />
+    </>
+  );
+};
+
+let serverSidePropsFunction = null;
+if (process.env.NEXT_PUBLIC_SEO === "true") {
+  serverSidePropsFunction = async (context) => {
+    const { req } = context; // Extract query and request object from context
+    const currentURL = `${req.headers.host}${req.url}`;
+    const seoData = await fetchDataFromSeo();
+    // Pass the fetched data as props to the page component
+    return {
+      props: {
+        seoData,
+        currentURL,
+      },
+    };
+  };
+}
+
+export const getServerSideProps = serverSidePropsFunction;
+
+export default Index;

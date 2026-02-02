@@ -132,7 +132,7 @@
                 // Use dynamic import to get API config
                 const { API_BASE_URL } = await import('./api-config.js');
                 const backendUrl = window.location.hostname === 'localhost' ? 
-                    'http://localhost:8000' : 'https://adminrealestate.omko.do/public';
+                    'http://localhost:8000' : 'https://admin.omko.do';
                 
                 console.log('🔍 Testing backend at:', backendUrl);
                 
@@ -162,7 +162,7 @@
             
             try {
                 const backendUrl = window.location.hostname === 'localhost' ? 
-                    'http://localhost:8000' : 'https://adminrealestate.omko.do/public';
+                    'http://localhost:8000' : 'https://admin.omko.do';
                 
                 const response = await fetch(`${backendUrl}/api/get_system_settings`, {
                     method: 'POST',

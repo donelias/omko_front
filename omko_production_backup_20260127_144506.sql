@@ -1,0 +1,1 @@
+mysqldump: Couldn't execute '/*!100100 SET WAIT_TIMEOUT=DEFAULT */': You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '0 SET WAIT_TIMEOUT=DEFAULT */' at line 1 (1064)
