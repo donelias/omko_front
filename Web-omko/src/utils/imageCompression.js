@@ -1,34 +1,34 @@
 import imageCompression from 'browser-image-compression';
 
-// Image compression configuration
+// Image compression configuration - OPTIMIZADO PARA MÁXIMA CALIDAD EN PANTALLA
 export const IMAGE_COMPRESSION_CONFIG = {
-  // Para título (1042 x 584) - Optimizado según metadatos de imagenes analizadas
+  // Para título (1042 x 584) - CALIDAD EXCELENTE PARA PANTALLAS
   titleImage: {
-    maxSizeMB: 0.08,       // 80 KB (optimizado para web)
+    maxSizeMB: 0.25,       // 250 KB (calidad máxima manteniendo web-friendly)
     width: 1042,
     height: 584,
-    quality: 0.69,         // JPEG calidad 69 (según análisis de metadatos)
+    quality: 0.90,         // JPEG calidad 90 (EXCELENTE - casi sin pérdida visible)
   },
-  // Para galería (1042 x 584 multiple imágenes) - Optimizado según metadatos
+  // Para galería (1042 x 584 multiple imágenes) - CALIDAD EXCELENTE PARA PANTALLAS
   galleryImages: {
-    maxSizeMB: 0.08,       // 80 KB por imagen (optimizado para web)
+    maxSizeMB: 0.25,       // 250 KB por imagen (calidad máxima)
     width: 1042,
     height: 584,
-    quality: 0.69,         // JPEG calidad 69 (según análisis de metadatos)
+    quality: 0.90,         // JPEG calidad 90 (EXCELENTE - casi sin pérdida visible)
   },
-  // Para imagen 3D (1042 x 584) - Optimizado según metadatos
+  // Para imagen 3D (1042 x 584) - CALIDAD EXCELENTE PARA PANTALLAS
   threeDImage: {
-    maxSizeMB: 0.08,       // 80 KB (optimizado para web)
+    maxSizeMB: 0.25,       // 250 KB (calidad máxima)
     width: 1042,
     height: 584,
-    quality: 0.69,         // JPEG calidad 69 (según análisis de metadatos)
+    quality: 0.90,         // JPEG calidad 90 (EXCELENTE - casi sin pérdida visible)
   },
-  // Para imagen OG/SEO (640 x 427) - Optimizado según metadatos de portada-seo
+  // Para imagen OG/SEO (640 x 427) - CALIDAD EXCELENTE PARA SEO
   ogImage: {
-    maxSizeMB: 0.036,      // 36 KB (optimizado para web/SEO)
+    maxSizeMB: 0.15,       // 150 KB (excelente para SEO)
     width: 640,
     height: 427,
-    quality: 0.69,         // JPEG calidad 69 (según análisis de metadatos)
+    quality: 0.90,         // JPEG calidad 90 (EXCELENTE)
   },
 };
 

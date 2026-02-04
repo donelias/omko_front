@@ -10,7 +10,7 @@ import { settingsData } from "@/store/reducer/settingsSlice";
 import { useSelector } from "react-redux";
 import Map from "@/Components/GoogleMap/GoogleMap";
 import { languageData } from "@/store/reducer/languageSlice";
-import { isThemeEnabled, placeholderImage, translate, truncate } from "@/utils";
+import { isThemeEnabled, placeholderImage, translate, truncate, convertKmToMinutes } from "@/utils";
 import { useRouter } from "next/router";
 import {
   intrestedPropertyApi,
@@ -823,12 +823,8 @@ const PropertyDetails = () => {
                                                 </div>
                                                 <div className="valueDiv">
                                                   <span id="spacs-count">
-                                                    {elem.distance} {""}{" "}
-                                                    {elem.distance > 1 ? (
-                                                      translate(DistanceSymbol + "s")
-                                                    ) : (
-                                                      translate(DistanceSymbol)
-                                                    )}
+                                                    {convertKmToMinutes(elem.distance)} {""}{" "}
+                                                    min
                                                   </span>
                                                 </div>
                                               </div>

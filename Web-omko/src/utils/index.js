@@ -31,6 +31,15 @@ export const translate = (label) => {
   }
 };
 
+// Convert distance in km to travel time in minutes
+// Assumes average speed of 40 km/h for urban/suburban areas
+export const convertKmToMinutes = (distanceKm, averageSpeed = 40) => {
+  if (!distanceKm || distanceKm === 0) return 0;
+  // Formula: time (minutes) = distance (km) / speed (km/h) * 60
+  const minutes = Math.round((distanceKm / averageSpeed) * 60);
+  return minutes;
+};
+
 // is login user check
 export const isLogin = () => {
   let user = store.getState()?.User_signup
