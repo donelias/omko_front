@@ -487,7 +487,7 @@ export const updatePostProperty = (action_type, id, title, description, city, st
 
     // Append the property data to the FormData object
     if (action_type) { data.append('action_type', action_type); }
-    if (id) { data.append('id', id); }
+    if (id) { data.append('property_id', id); }
     if (title) { data.append('title', title); }
     if (description) { data.append('description', description); }
     if (city) { data.append('city', city); }
