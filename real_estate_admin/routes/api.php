@@ -14,6 +14,8 @@ use App\Http\Controllers\Api\PaymentTransactionController;
 use App\Http\Controllers\Api\UserPackageLimitController;
 use App\Http\Controllers\Api\ReviewRatingController;
 use App\Http\Controllers\Api\NewsletterSubscriptionController;
+use App\Http\Controllers\Api\LeadController;
+use App\Http\Controllers\Api\AgentMetaCredentialController;
 // Fallback to old controller for methods not yet migrated
 use App\Http\Controllers\ApiController;
 
@@ -92,6 +94,10 @@ Route::get('agents/{agentId}/reviews', [ReviewRatingController::class, 'getAgent
 Route::get('agents/{agentId}/reviews/stats', [ReviewRatingController::class, 'agentReviewStats']);
 Route::get('reviews/{review}', [ReviewRatingController::class, 'show']);
 
+// Leads Routes (Public - for receiving leads from Meta and website forms)
+Route::post('leads/webhook/meta/{agentId}', [LeadController::class, 'metaWebhook']);
+Route::post('leads', [LeadController::class, 'store']);
+
 });
 
 // ============================================
@@ -105,7 +111,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('update_post_property', [PropertyApiController::class, 'updateProperty']);
     Route::post('delete_property', [PropertyApiController::class, 'deleteProperty']);
     Route::post('update_property_status', [PropertyApiController::class, 'updatePropertyStatus']);
-    Route::get('get-added-properties', [PropertyApiController::class, 'getUserProperties']);
+    Route::get('get-added-properties', [ApiController::class, 'getAddedProperties']);
     Route::post('remove_post_images', [PropertyApiController::class, 'removePropertyImage']);
 
     // ========== USER ROUTES ==========
@@ -228,6 +234,32 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('personalised-fields', [InterestApiController::class, 'getUserInterests']);
     Route::post('personalised-fields', [InterestApiController::class, 'storeUserInterests']);
     Route::delete('personalised-fields', [InterestApiController::class, 'deleteUserInterest']);
+
+    // ========== LEADS ROUTES (Authenticated) ==========
+    Route::get('leads', [LeadController::class, 'index']);
+    Route::get('leads/{id}', [LeadController::class, 'show']);
+    Route::put('leads/{id}/status', [LeadController::class, 'updateStatus']);
+    Route::post('leads/{id}/notes', [LeadController::class, 'addNote']);
+    Route::delete('leads/{id}', [LeadController::class, 'destroy']);
+    Route::get('properties/{propertyId}/leads', [LeadController::class, 'getByProperty']);
+    Route::get('leads/metrics/conversion', [LeadController::class, 'getConversionMetrics']);
+
+    // ========== AGENT META CREDENTIALS ROUTES (Authenticated - Agent Self-Service) ==========
+    Route::get('agent/meta-credentials', [AgentMetaCredentialController::class, 'show']);
+    Route::post('agent/meta-credentials', [AgentMetaCredentialController::class, 'store']);
+    Route::post('agent/meta-credentials/verify', [AgentMetaCredentialController::class, 'verify']);
+    Route::patch('agent/meta-credentials/toggle', [AgentMetaCredentialController::class, 'toggle']);
+    Route::delete('agent/meta-credentials', [AgentMetaCredentialController::class, 'destroy']);
+    Route::get('agent/meta-credentials/webhook-url', [AgentMetaCredentialController::class, 'getWebhookUrl']);
+
+    // ========== ADMIN LEADS ROUTES (Authenticated + Admin) ==========
+    Route::middleware('isAdmin')->group(function () {
+        Route::get('admin/leads', [LeadController::class, 'indexAll']);
+        Route::put('admin/leads/{id}', [LeadController::class, 'updateAsAdmin']);
+        Route::delete('admin/leads/{id}', [LeadController::class, 'destroyAsAdmin']);
+        Route::put('admin/leads/{id}/assign', [LeadController::class, 'assignToAgentAsAdmin']);
+        Route::get('admin/leads/stats', [LeadController::class, 'getStatsAsAdmin']);
+    });
 
     // ========== FALLBACK ROUTES (Still using old controller) ==========
     Route::get('get_notification_list', [ApiController::class, 'get_notification_list']);
