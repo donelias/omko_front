@@ -1,0 +1,450 @@
+import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  setMetaCredentials,
+  addMetaCredential,
+  deleteMetaCredential,
+  setLoading,
+  setError,
+  setSuccess,
+  clearError,
+  clearSuccess,
+} from '@/redux/slices/metaIntegrationSlice';
+import {
+  getMetaCredentialsApi,
+  createMetaCredentialApi,
+  deleteMetaCredentialApi,
+  renewMetaTokenApi,
+} from '@/api/apiRoutes';
+import { BiEdit3, BiTrash, BiRefresh, BiCheckCircle, BiXCircle, BiCopy } from 'react-icons/bi';
+
+export default function MetaCredentialsManager({ agentId }) {
+  const dispatch = useDispatch();
+  const { credentials, loading, error, success } = useSelector((state) => state.metaIntegration);
+  const metaCredentials = credentials.meta || [];
+
+  // Form state
+  const [formData, setFormData] = useState({
+    meta_app_id: '',
+    meta_app_secret: '',
+    meta_access_token: '',
+    meta_business_account_id: '',
+    meta_ad_account_id: '',
+    nombre_cuenta: '',
+    email_cuenta: '',
+  });
+
+  const [editingId, setEditingId] = useState(null);
+  const [showForm, setShowForm] = useState(false);
+  const [copiedToken, setCopiedToken] = useState(null);
+
+  // Fetch credentials on mount
+  useEffect(() => {
+    fetchCredentials();
+  }, []);
+
+  // Clear alerts
+  useEffect(() => {
+    if (success) {
+      const timeout = setTimeout(() => dispatch(clearSuccess()), 3000);
+      return () => clearTimeout(timeout);
+    }
+  }, [success, dispatch]);
+
+  useEffect(() => {
+    if (error) {
+      const timeout = setTimeout(() => dispatch(clearError()), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [error, dispatch]);
+
+  const fetchCredentials = async () => {
+    try {
+      dispatch(setLoading(true));
+      const response = await getMetaCredentialsApi();
+      const credentials = response.data || [];
+      dispatch(setMetaCredentials(credentials));
+    } catch (err) {
+      dispatch(setError(err.message || 'Failed to fetch credentials'));
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    // Validate required fields
+    if (!formData.meta_app_id || !formData.meta_app_secret || !formData.meta_access_token) {
+      dispatch(setError('Por favor completa los campos requeridos'));
+      return;
+    }
+
+    try {
+      dispatch(setLoading(true));
+      const response = await createMetaCredentialApi(formData);
+      
+      if (response.data) {
+        dispatch(addMetaCredential(response.data));
+        dispatch(setSuccess(true));
+        setFormData({
+          meta_app_id: '',
+          meta_app_secret: '',
+          meta_access_token: '',
+          meta_business_account_id: '',
+          meta_ad_account_id: '',
+          nombre_cuenta: '',
+          email_cuenta: '',
+        });
+        setShowForm(false);
+      }
+    } catch (err) {
+      dispatch(setError(err.response?.data?.message || err.message || 'Error al crear credencial'));
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('¿Estás seguro que deseas eliminar esta credencial?')) {
+      return;
+    }
+
+    try {
+      dispatch(setLoading(true));
+      await deleteMetaCredentialApi(id);
+      dispatch(deleteMetaCredential(id));
+      dispatch(setSuccess(true));
+    } catch (err) {
+      dispatch(setError(err.response?.data?.message || 'Error al eliminar credencial'));
+    }
+  };
+
+  const handleRenewToken = async (id) => {
+    try {
+      dispatch(setLoading(true));
+      const response = await renewMetaTokenApi(id);
+      
+      if (response.data) {
+        dispatch(setSuccess(true));
+        fetchCredentials(); // Refresh list
+      }
+    } catch (err) {
+      dispatch(setError(err.response?.data?.message || 'Error al renovar token'));
+    }
+  };
+
+  const copyToClipboard = (text, tokenId) => {
+    navigator.clipboard.writeText(text);
+    setCopiedToken(tokenId);
+    setTimeout(() => setCopiedToken(null), 2000);
+  };
+
+  const isTokenExpiring = (expiryDate) => {
+    if (!expiryDate) return false;
+    const days = Math.floor((new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+    return days <= 7 && days > 0;
+  };
+
+  const isTokenExpired = (expiryDate) => {
+    if (!expiryDate) return false;
+    return new Date(expiryDate) < new Date();
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center border-b pb-4">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Credenciales Meta</h2>
+          <p className="text-sm text-gray-600 mt-1">Gestiona tus conexiones con Meta (Facebook, Instagram, Leads Ads)</p>
+        </div>
+        <button
+          onClick={() => setShowForm(!showForm)}
+          className={`px-4 py-2 rounded-lg font-semibold transition ${
+            showForm
+              ? 'bg-red-500 hover:bg-red-600 text-white'
+              : 'bg-blue-500 hover:bg-blue-600 text-white'
+          }`}
+        >
+          {showForm ? 'Cancelar' : '+ Agregar Credencial'}
+        </button>
+      </div>
+
+      {/* Alerts */}
+      {success && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-3">
+          <BiCheckCircle className="text-green-600 text-2xl" />
+          <p className="text-green-800">Operación completada exitosamente</p>
+        </div>
+      )}
+
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-3">
+          <BiXCircle className="text-red-600 text-2xl" />
+          <p className="text-red-800">{error}</p>
+        </div>
+      )}
+
+      {/* Form */}
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-gray-50 rounded-lg p-6 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Meta App ID *
+              </label>
+              <input
+                type="text"
+                name="meta_app_id"
+                value={formData.meta_app_id}
+                onChange={handleInputChange}
+                placeholder="123456789..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Meta App Secret *
+              </label>
+              <input
+                type="password"
+                name="meta_app_secret"
+                value={formData.meta_app_secret}
+                onChange={handleInputChange}
+                placeholder="••••••••••••"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Access Token *
+              </label>
+              <input
+                type="password"
+                name="meta_access_token"
+                value={formData.meta_access_token}
+                onChange={handleInputChange}
+                placeholder="••••••••••••••••••••••••••"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Business Account ID *
+              </label>
+              <input
+                type="text"
+                name="meta_business_account_id"
+                value={formData.meta_business_account_id}
+                onChange={handleInputChange}
+                placeholder="act_1234567890..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Ad Account ID *
+              </label>
+              <input
+                type="text"
+                name="meta_ad_account_id"
+                value={formData.meta_ad_account_id}
+                onChange={handleInputChange}
+                placeholder="act_9876543210..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Nombre de Cuenta
+              </label>
+              <input
+                type="text"
+                name="nombre_cuenta"
+                value={formData.nombre_cuenta}
+                onChange={handleInputChange}
+                placeholder="Mi Cuenta Meta"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Email de Cuenta
+              </label>
+              <input
+                type="email"
+                name="email_cuenta"
+                value={formData.email_cuenta}
+                onChange={handleInputChange}
+                placeholder="admin@empresa.com"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white font-semibold py-2 rounded-lg transition"
+          >
+            {loading ? 'Guardando...' : 'Guardar Credencial'}
+          </button>
+        </form>
+      )}
+
+      {/* Credentials List */}
+      <div className="space-y-4">
+        {metaCredentials.length === 0 ? (
+          <div className="bg-gray-50 rounded-lg p-8 text-center">
+            <p className="text-gray-600">No hay credenciales de Meta configuradas</p>
+          </div>
+        ) : (
+          metaCredentials.map((credential) => (
+            <div
+              key={credential.id}
+              className="bg-gray-50 rounded-lg p-6 border border-gray-200 hover:border-blue-300 transition"
+            >
+              {/* Header */}
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {credential.nombre_cuenta || 'Credencial Sin Nombre'}
+                  </h3>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {credential.email_cuenta || 'Sin email'}
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  {isTokenExpired(credential.fecha_expiracion_token) && (
+                    <span className="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs font-semibold">
+                      Token Expirado
+                    </span>
+                  )}
+                  {isTokenExpiring(credential.fecha_expiracion_token) && (
+                    <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-semibold">
+                      Expira Pronto
+                    </span>
+                  )}
+                  {!isTokenExpired(credential.fecha_expiracion_token) &&
+                    !isTokenExpiring(credential.fecha_expiracion_token) && (
+                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold">
+                        Activo
+                      </span>
+                    )}
+                </div>
+              </div>
+
+              {/* Details Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-4">
+                <div>
+                  <p className="text-xs text-gray-600 font-semibold uppercase">App ID</p>
+                  <p className="text-sm text-gray-900 font-mono">{credential.meta_app_id}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 font-semibold uppercase">Negocio ID</p>
+                  <p className="text-sm text-gray-900 font-mono">{credential.meta_business_account_id}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 font-semibold uppercase">Ad Account ID</p>
+                  <p className="text-sm text-gray-900 font-mono">{credential.meta_ad_account_id}</p>
+                </div>
+              </div>
+
+              {/* Webhook Token */}
+              <div className="bg-white rounded p-4 mb-4 border border-gray-200">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-xs text-gray-600 font-semibold uppercase mb-1">Webhook Verify Token</p>
+                    <p className="text-sm text-gray-900 font-mono break-all">
+                      {credential.webhook_verify_token}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(credential.webhook_verify_token, credential.id)}
+                    className={`px-3 py-2 rounded transition ${
+                      copiedToken === credential.id
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    }`}
+                  >
+                    <BiCopy className="text-lg" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div className="grid grid-cols-2 gap-4 mb-4 text-xs">
+                <div>
+                  <p className="text-gray-600 font-semibold">Conectado</p>
+                  <p className="text-gray-900">
+                    {new Date(credential.fecha_conexion).toLocaleDateString('es-ES', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-gray-600 font-semibold">Expira</p>
+                  <p className={credential.fecha_expiracion_token ? 'text-gray-900' : 'text-gray-500'}>
+                    {credential.fecha_expiracion_token
+                      ? new Date(credential.fecha_expiracion_token).toLocaleDateString('es-ES', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : 'No establecida'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleRenewToken(credential.id)}
+                  disabled={loading}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-yellow-500 hover:bg-yellow-600 disabled:bg-gray-400 text-white rounded-lg font-semibold transition text-sm"
+                >
+                  <BiRefresh className="text-lg" />
+                  Renovar Token
+                </button>
+                <button
+                  onClick={() => handleDelete(credential.id)}
+                  disabled={loading}
+                  className="flex items-center justify-center px-3 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-lg font-semibold transition"
+                >
+                  <BiTrash className="text-lg" />
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h4 className="font-semibold text-blue-900 mb-2">📝 Cómo configurar:</h4>
+        <ol className="text-sm text-blue-800 space-y-2 list-decimal list-inside">
+          <li>Ve a <a href="https://developers.facebook.com" target="_blank" rel="noopener noreferrer" className="underline font-semibold">developers.facebook.com</a></li>
+          <li>Crea una app de tipo "Business"</li>
+          <li>Configura los webhooks: <code className="bg-white px-2 py-1 rounded">https://tudominio.com/api/webhooks/meta</code></li>
+          <li>Copia los tokens en el formulario arriba</li>
+          <li>Copia el "Webhook Verify Token" a la configuración de Meta</li>
+        </ol>
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <url>
+    <loc>https://admin.omko.do/public?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.746Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/properties/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/properties/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/properties/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/properties/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/projects/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/projects/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/projects/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/projects/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/search/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/search/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/search/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/search/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/projects/featured-projects/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/projects/featured-projects/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/projects/featured-projects/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/projects/featured-projects/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/properties-on-map/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/properties-on-map/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/properties-on-map/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/properties-on-map/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/all/categories/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/all/categories/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/all/categories/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/all/categories/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/all/agents/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/all/agents/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/all/agents/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/all/agents/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/all/articles/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/all/articles/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/all/articles/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/all/articles/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/about-us/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/about-us/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/about-us/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/about-us/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/contact-us/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.747Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/contact-us/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/contact-us/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/contact-us/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/subscription-plan/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.748Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/subscription-plan/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/subscription-plan/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/subscription-plan/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/faqs/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.748Z</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/faqs/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/faqs/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/faqs/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/privacy-policy/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.748Z</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/privacy-policy/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/privacy-policy/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/privacy-policy/?lang=es" />
+  </url>
+  <url>
+    <loc>https://admin.omko.do/public/terms-and-conditions/?lang=es</loc>
+    <lastmod>2026-03-02T03:46:55.748Z</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+    <xhtml:link rel="alternate" hreflang="es" href="https://admin.omko.do/public/terms-and-conditions/?lang=es" />
+    <xhtml:link rel="alternate" hreflang="en" href="https://admin.omko.do/public/terms-and-conditions/?lang=en" />
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://admin.omko.do/public/terms-and-conditions/?lang=es" />
+  </url>
+</urlset>
