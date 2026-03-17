@@ -27,8 +27,8 @@ const mapContainerStyle = {
 };
 
 const defaultCenter = {
-    lat: 23.2530, // Bhuj latitude
-    lng: 69.6699, // Bhuj longitude
+    lat: 18.4861, // Santo Domingo, Dominican Republic latitude
+    lng: -69.9312, // Santo Domingo, Dominican Republic longitude
     radius: 1
 };
 

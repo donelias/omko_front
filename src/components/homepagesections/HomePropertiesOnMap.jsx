@@ -37,7 +37,7 @@ const HomePropertiesOnMap = ({
         return state.WebSetting.data;
     });
 
-    // Bhuj coordinates
+    // Default map center coordinates - uses location from state or web settings
     const defaultCenter = {
         lat: Number(location?.latitude || webSettings?.latitude),
         lng: Number(location?.longitude || webSettings?.longitude),
