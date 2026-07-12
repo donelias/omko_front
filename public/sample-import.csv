@@ -1,0 +1,5 @@
+title,unit_code,price,currency,total_units,available_units,bedrooms,bathrooms,build_area
+Studio A,STD-A,150000,USD,10,8,1,1,45
+One Bedroom,1BR-B,220000,USD,15,12,2,1,65
+Two Bedroom,2BR-C,350000,DOP,8,6,3,2,95
+Penthouse,PH-D,550000,USD,2,1,4,3,160

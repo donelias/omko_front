@@ -285,7 +285,6 @@ const AddProject = () => {
         const hasAnyFloorData = floorFormData.some((floor) =>
             [
                 floor.floorTitle,
-                floor.floorImage,
                 floor.unitCode,
                 floor.price,
                 floor.currency,
@@ -302,11 +301,6 @@ const AddProject = () => {
         for (const floor of floorFormData) {
             if (!floor.floorTitle?.trim()) {
                 toast.error(t("floorTitleIsRequired"));
-                return false;
-            }
-
-            if (!floor.floorImage) {
-                toast.error(t("floorImageIsRequired"));
                 return false;
             }
 
@@ -704,22 +698,18 @@ const AddProject = () => {
                 const title = field.floorTitle;
                 const document = field.floorImage;
 
-                // Loop through documents array to handle multiple images
-                // for (const document of documents) {
-                if (document) {
-                    plans.push({
-                        id: "",
-                        title: title,
-                        document: document,
-                        unit_code: (field.unitCode || "").trim().toUpperCase(),
-                        price: field.price !== "" ? field.price : null,
-                        currency: (field.currency || "USD").toUpperCase(),
-                        total_units: field.totalUnits !== "" ? field.totalUnits : null,
-                        available_units: field.availableUnits !== "" ? field.availableUnits : null,
-                        unit_status: field.unitStatus || "available",
-                        features: field.dynamicFeatures || {},
-                    });
-                }
+                plans.push({
+                    id: "",
+                    title: title,
+                    document: document || "",
+                    unit_code: (field.unitCode || "").trim().toUpperCase(),
+                    price: field.price !== "" ? field.price : null,
+                    currency: (field.currency || "USD").toUpperCase(),
+                    total_units: field.totalUnits !== "" ? field.totalUnits : null,
+                    available_units: field.availableUnits !== "" ? field.availableUnits : null,
+                    unit_status: field.unitStatus || "available",
+                    features: field.dynamicFeatures || {},
+                });
             }
 
             // Format translations for API

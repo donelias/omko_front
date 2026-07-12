@@ -463,7 +463,6 @@ const EditProject = ({ params }) => {
         const hasAnyFloorData = floorFormData.some((floor) =>
             [
                 floor.floorTitle,
-                floor.floorImage,
                 floor.unitCode,
                 floor.price,
                 floor.currency,
@@ -480,11 +479,6 @@ const EditProject = ({ params }) => {
         for (const floor of floorFormData) {
             if (!floor.floorTitle?.trim()) {
                 toast.error(t("floorTitleIsRequired"));
-                return false;
-            }
-
-            if (!floor.floorImage) {
-                toast.error(t("floorImageIsRequired"));
                 return false;
             }
 
@@ -714,28 +708,24 @@ const EditProject = ({ params }) => {
 
             // Loop through floorFields and push each entry into plans array
             for (const field of compressedFloorFormData) {
-                const id = field.id || "";
                 const title = field.floorTitle?.trim() || "";
+                if (!title) continue;
+
+                const id = field.id || "";
                 const document = field.floorImage;
 
-                // Only include plans that have both title and image
-                if (document && title) {
-                    plans.push({
-                        id: id,
-                        title: title,
-                        document: document instanceof Blob ? document : "",
-                        unit_code: (field.unitCode || "").trim().toUpperCase(),
-                        price: field.price !== "" ? field.price : null,
-                        currency: (field.currency || "USD").toUpperCase(),
-                        total_units: field.totalUnits !== "" ? field.totalUnits : null,
-                        available_units: field.availableUnits !== "" ? field.availableUnits : null,
-                        unit_status: field.unitStatus || "available",
-                        features: field.dynamicFeatures || {},
-                    });
-                } else if (id) {
-                    // If this is an existing plan with ID but document was removed
-                    setRemovedPlans(prev => [...prev, id]);
-                }
+                plans.push({
+                    id: id,
+                    title: title,
+                    document: document instanceof Blob ? document : "",
+                    unit_code: (field.unitCode || "").trim().toUpperCase(),
+                    price: field.price !== "" ? field.price : null,
+                    currency: (field.currency || "USD").toUpperCase(),
+                    total_units: field.totalUnits !== "" ? field.totalUnits : null,
+                    available_units: field.availableUnits !== "" ? field.availableUnits : null,
+                    unit_status: field.unitStatus || "available",
+                    features: field.dynamicFeatures || {},
+                });
             }
 
             // Convert removed items arrays for API
@@ -1020,6 +1010,8 @@ const EditProject = ({ params }) => {
                     isEditing={true}
                     setRemovedPlans={setRemovedPlans}
                     featureParameters={selectedCategory?.parameter_types?.filter(p => p.type === "feature") || []}
+                    projectId={editProjectId}
+                    onImportComplete={handleFetchProjectDetails}
                 />
             )}
 

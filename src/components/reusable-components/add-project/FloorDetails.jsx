@@ -8,6 +8,7 @@ import { useTranslation } from "@/components/context/TranslationContext";
 import { useDropzone } from "react-dropzone";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import BulkImportUnits from "./BulkImportUnits";
 
 // Floor Details Component for Projects
 const FloorDetails = ({
@@ -16,7 +17,9 @@ const FloorDetails = ({
     handleCheckRequiredFields,
     isEditing = false,
     setRemovedPlans = () => {},
-    featureParameters = []
+    featureParameters = [],
+    projectId = null,
+    onImportComplete = () => {},
 }) => {
     const t = useTranslation();
     const [currentFloorIndex, setCurrentFloorIndex] = useState(0);
@@ -89,7 +92,7 @@ const FloorDetails = ({
         const lastFloorIndex = floorFormData.length - 1;
         const lastFloor = floorFormData[lastFloorIndex];
 
-        if (lastFloor.floorTitle.trim() === "" || !lastFloor.floorImage) {
+        if (lastFloor.floorTitle.trim() === "") {
             return toast.error(t("currentFloorDetailsIsRequired"));
         } else {
             setFloorFormData((prev) => [...prev, getDefaultFloor()]);
@@ -245,7 +248,6 @@ const FloorDetails = ({
         const hasAnyFloorData = floorFormData.some((floor) =>
             [
                 floor.floorTitle,
-                floor.floorImage,
                 floor.unitCode,
                 floor.price,
                 floor.currency,
@@ -269,10 +271,6 @@ const FloorDetails = ({
 
             if (!floor.floorTitle?.trim()) {
                 errors.floorTitle = t("floorTitleIsRequired");
-            }
-
-            if (!floor.floorImage) {
-                errors.floorImage = t("floorImageIsRequired");
             }
 
             const normalizedCode = (floor.unitCode || "").trim().toUpperCase();
@@ -434,7 +432,6 @@ const FloorDetails = ({
                                         </div>
                                     )}
                                 </div>
-                                {errors.floorImage && <p className="mt-1 text-xs text-red-600">{errors.floorImage}</p>}
                                 {floorFormData.length > 1 && (
                                     <button
                                         type="button"
@@ -592,6 +589,11 @@ const FloorDetails = ({
                     <span>{t("addFloor")}</span>
                 </Button>
             </div>
+
+            {/* Bulk Import (edit mode only) */}
+            {projectId && (
+                <BulkImportUnits projectId={projectId} onImportComplete={onImportComplete} />
+            )}
 
             {/* Next Button */}
             <div className="flex justify-end">

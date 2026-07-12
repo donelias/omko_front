@@ -2487,3 +2487,19 @@ export const getExchangeRateApi = async () => {
   const res = await api.get(apiEndpoints.GET_EXCHANGE_RATE);
   return res.data;
 };
+
+export const previewImportUnitsApi = async (projectId, file) => {
+  const formData = new FormData();
+  formData.append("project_id", projectId);
+  formData.append("file", file);
+  const res = await api.post(apiEndpoints.PREVIEW_IMPORT_UNITS, formData);
+  return res.data;
+};
+
+export const bulkImportUnitsApi = async (projectId, file) => {
+  const formData = new FormData();
+  formData.append("project_id", projectId);
+  formData.append("file", file);
+  const res = await api.post(apiEndpoints.BULK_IMPORT_UNITS, formData);
+  return res.data;
+};

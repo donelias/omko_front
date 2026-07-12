@@ -167,6 +167,8 @@ export const RENEW_LISTING = "renew_listing";
 
 export const GET_AGENT_PACKAGES = "get-agent-packages";
 export const UPLOAD_PROJECT_DOCUMENT = "upload-project-document";
+export const PREVIEW_IMPORT_UNITS = "preview-import-units";
+export const BULK_IMPORT_UNITS = "bulk-import-units";
 
 export const GET_USER_VERIFICATION_FORM = "get_user_verification_form";
 export const GET_USER_VERIFICATION_FORM_VALUES = "get_user_verification_form_values";
