@@ -2,7 +2,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import {
-  getUserProjectsApi
+  getUserProjectsApi,
+  updatePlanStatusApi
 } from "@/api/apiRoutes";
 import ProjectDetailsSkeleton from "../skeletons/project-skeletons/ProjectDetailsSkeleton";
 import NoDataFound from "../no-data-found/NoDataFound";
@@ -61,6 +62,21 @@ const AgentProjectDetails = () => {
   const openLightbox = (index) => {
     setCurrentImage(index);
     setViewerIsOpen(true);
+  };
+
+  const handlePlanStatusChange = async (planId, newStatus) => {
+    try {
+      const res = await updatePlanStatusApi({ plan_id: String(planId), unit_status: newStatus });
+      if (!res?.error) {
+        toast.success(t('statusUpdatedSuccessfully'));
+        fetchProjectDetails();
+      } else {
+        toast.error(res?.message || t('somethingWentWrong'));
+      }
+    } catch (err) {
+      console.error('Plan status update error:', err);
+      toast.error(t('somethingWentWrong'));
+    }
   };
 
   const fetchProjectDetails = useCallback(async () => {
@@ -282,7 +298,7 @@ const AgentProjectDetails = () => {
 
               {/* Floor Plans */}
               {projectDetails && projectDetails?.plans && (
-                <FloorAccordion plans={projectDetails?.plans} featureParameters={projectDetails?.category?.parameter_types?.filter(p => p.type === "feature") || []} />
+                <FloorAccordion plans={projectDetails?.plans} featureParameters={projectDetails?.category?.parameter_types?.filter(p => p.type === "feature") || []} editable={true} onStatusChange={handlePlanStatusChange} />
               )}
 
               {/* Documents/Attachments */}

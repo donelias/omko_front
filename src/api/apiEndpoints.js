@@ -175,6 +175,9 @@ export const GET_USER_VERIFICATION_FORM_VALUES = "get_user_verification_form_val
 export const APPLY_USER_VERIFICATION = "apply_user_verification";
 export const ACTIVATE_LISTING = "activate-listing";
 
+export const UPDATE_UNIT_STATUS = "update-unit-status";
+export const UPDATE_PLAN_STATUS = "update-plan-status";
+
 // Pre-qualification & Financial Entities
 export const GET_BANKS = "banks";
 export const GET_COOPERATIVES = "cooperatives";

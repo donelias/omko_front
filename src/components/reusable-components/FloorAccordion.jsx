@@ -8,15 +8,44 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useTranslation } from "../context/TranslationContext";
 import ImageWithPlaceholder from "../image-with-placeholder/ImageWithPlaceholder";
 
-const FloorAccordion = ({ plans, featureParameters = [] }) => {
+const statusOptions = [
+  { value: 'available', labelKey: 'available', color: 'text-green-600 bg-green-50' },
+  { value: 'low_stock', labelKey: 'lowStock', color: 'text-amber-600 bg-amber-50' },
+  { value: 'sold_out', labelKey: 'sold', color: 'text-red-600 bg-red-50' },
+  { value: 'inactive', labelKey: 'inactive', color: 'text-gray-600 bg-gray-50' },
+];
+
+const getStatusBadge = (status, t) => {
+  const opt = statusOptions.find(o => o.value === status);
+  if (!opt) return <span className="text-xs text-gray-400">-</span>;
+  return (
+    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${opt.color}`}>
+      {t(opt.labelKey)}
+    </span>
+  );
+};
+
+const FloorAccordion = ({ plans, featureParameters = [], editable = false, onStatusChange }) => {
   const t = useTranslation();
   const [activeKey, setActiveKey] = useState(null);
+  const [savingPlanId, setSavingPlanId] = useState(null);
 
   const handleAccordionToggle = (key) => {
     setActiveKey(activeKey === key ? null : key);
+  };
+
+  const handleStatusChange = async (planId, newStatus) => {
+    if (!onStatusChange) return;
+    setSavingPlanId(planId);
+    try {
+      await onStatusChange(planId, newStatus);
+    } finally {
+      setSavingPlanId(null);
+    }
   };
 
   if (!plans || plans.length === 0) {
@@ -79,7 +108,33 @@ const FloorAccordion = ({ plans, featureParameters = [] }) => {
                     </div>
                     <div>
                       <div className="text-xs opacity-70">Status</div>
-                      <div className="font-semibold">{plan?.unit_status || "-"}</div>
+                      {editable ? (
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={plan.unit_status || 'available'}
+                            onValueChange={(val) => handleStatusChange(planId, val)}
+                            disabled={savingPlanId === planId}
+                          >
+                            <SelectTrigger className="h-8 w-36 text-xs border rounded">
+                              <SelectValue>
+                                {getStatusBadge(plan.unit_status || 'available', t)}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              {statusOptions.map(opt => (
+                                <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                                  {t(opt.labelKey)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {savingPlanId === planId && (
+                            <span className="text-xs text-gray-400 animate-pulse">...</span>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="font-semibold">{plan?.unit_status || "-"}</div>
+                      )}
                     </div>
                   </div>
 

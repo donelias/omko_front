@@ -463,6 +463,7 @@ const EditProject = ({ params }) => {
         const hasAnyFloorData = floorFormData.some((floor) =>
             [
                 floor.floorTitle,
+                floor.floorImage,
                 floor.unitCode,
                 floor.price,
                 floor.currency,
@@ -479,6 +480,11 @@ const EditProject = ({ params }) => {
         for (const floor of floorFormData) {
             if (!floor.floorTitle?.trim()) {
                 toast.error(t("floorTitleIsRequired"));
+                return false;
+            }
+
+            if (!floor.floorImage) {
+                toast.error(t("floorImageIsRequired"));
                 return false;
             }
 
@@ -708,24 +714,26 @@ const EditProject = ({ params }) => {
 
             // Loop through floorFields and push each entry into plans array
             for (const field of compressedFloorFormData) {
-                const title = field.floorTitle?.trim() || "";
-                if (!title) continue;
-
                 const id = field.id || "";
+                const title = field.floorTitle?.trim() || "";
                 const document = field.floorImage;
 
-                plans.push({
-                    id: id,
-                    title: title,
-                    document: document instanceof Blob ? document : "",
-                    unit_code: (field.unitCode || "").trim().toUpperCase(),
-                    price: field.price !== "" ? field.price : null,
-                    currency: (field.currency || "USD").toUpperCase(),
-                    total_units: field.totalUnits !== "" ? field.totalUnits : null,
-                    available_units: field.availableUnits !== "" ? field.availableUnits : null,
-                    unit_status: field.unitStatus || "available",
-                    features: field.dynamicFeatures || {},
-                });
+                if (document && title) {
+                    plans.push({
+                        id: id,
+                        title: title,
+                        document: document instanceof Blob ? document : "",
+                        unit_code: (field.unitCode || "").trim().toUpperCase(),
+                        price: field.price !== "" ? field.price : null,
+                        currency: (field.currency || "USD").toUpperCase(),
+                        total_units: field.totalUnits !== "" ? field.totalUnits : null,
+                        available_units: field.availableUnits !== "" ? field.availableUnits : null,
+                        unit_status: field.unitStatus || "available",
+                        features: field.dynamicFeatures || {},
+                    });
+                } else if (id) {
+                    setRemovedPlans(prev => [...prev, id]);
+                }
             }
 
             // Convert removed items arrays for API

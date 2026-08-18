@@ -13,7 +13,6 @@ import LocationComponent from '@/components/reusable-components/add-property/Loc
 import ImagesVideoTab from '@/components/reusable-components/add-project/ImagesVideoTab'
 import SEODetailsTab from '@/components/reusable-components/add-property/SEODetailsTab'
 import ProjectDetailsTab from '@/components/reusable-components/add-project/ProjectDetailsTab'
-import FloorDetails from '@/components/reusable-components/add-project/FloorDetails'
 import FacilitiesComponent from '@/components/reusable-components/add-property/FacilitiesComponent'
 import OutdoorFacilitiesComponent from '@/components/reusable-components/add-property/OutdoorFacilitiesComponent'
 import React from 'react'
@@ -80,8 +79,7 @@ const AddProject = () => {
         { id: "projectDetails", label: t("projectDetails") },
         { id: "imagesVideo", label: t("imagesVideo") },
         { id: "location", label: t("location") },
-        { id: "floorDetails", label: t("floorDetails") },
-            { id: "facilities", label: t("Amenities") },
+        { id: "facilities", label: t("Amenities") },
         { id: "outdoorFacilities", label: t("Outdoor Facilities") },
         { id: "seoSettings", label: t("seoSettings") },
     ]
@@ -105,20 +103,6 @@ const AddProject = () => {
         metaDescription: "",
         ogImage: null
     })
-
-    // Floor Details Form State
-    const [floorFormData, setFloorFormData] = useState([
-        {
-            floorTitle: '',
-            floorImage: null,
-            unitCode: '',
-            price: '',
-            currency: 'USD',
-            totalUnits: '',
-            availableUnits: '',
-            unitStatus: 'available',
-        }
-    ]);
 
     // Combined Media Form State
     const [mediaFormData, setMediaFormData] = useState({
@@ -281,59 +265,7 @@ const AddProject = () => {
         }
     }
 
-    const validateFloorDetails = () => {
-        const hasAnyFloorData = floorFormData.some((floor) =>
-            [
-                floor.floorTitle,
-                floor.unitCode,
-                floor.price,
-                floor.currency,
-                floor.totalUnits,
-                floor.availableUnits,
-            ].some((value) => value !== null && value !== undefined && String(value).trim() !== "")
-        );
 
-        if (!hasAnyFloorData) {
-            return true;
-        }
-
-        const seenCodes = new Set();
-        for (const floor of floorFormData) {
-            if (!floor.floorTitle?.trim()) {
-                toast.error(t("floorTitleIsRequired"));
-                return false;
-            }
-
-            const unitCode = (floor.unitCode || "").trim().toUpperCase();
-            if (unitCode) {
-                if (seenCodes.has(unitCode)) {
-                    toast.error(t("typologyUnitCodeUnique"));
-                    return false;
-                }
-                seenCodes.add(unitCode);
-            }
-
-            const hasTotal = floor.totalUnits !== "" && floor.totalUnits !== null && floor.totalUnits !== undefined;
-            const hasAvailable = floor.availableUnits !== "" && floor.availableUnits !== null && floor.availableUnits !== undefined;
-
-            if (hasTotal && Number(floor.totalUnits) < 0) {
-                toast.error(t("typologyTotalUnitsNonNegative"));
-                return false;
-            }
-
-            if (hasAvailable && Number(floor.availableUnits) < 0) {
-                toast.error(t("typologyAvailableUnitsNonNegative"));
-                return false;
-            }
-
-            if (hasTotal && hasAvailable && Number(floor.availableUnits) > Number(floor.totalUnits)) {
-                toast.error(t("typologyAvailableUnitsCannotExceedTotal"));
-                return false;
-            }
-        }
-
-        return true;
-    };
 
     const handleCheckRequiredFields = (currentTab, nextTab) => {
         let missingFields = false;
@@ -389,12 +321,6 @@ const AddProject = () => {
                     toast.error(t("projectTitleImageIsRequired"));
                     missingFields = true;
                     break;
-                }
-                break;
-
-            case "floorDetails":
-                if (!validateFloorDetails()) {
-                    missingFields = true;
                 }
                 break;
 
@@ -455,7 +381,7 @@ const AddProject = () => {
     };
 
     const handleTabChange = (value) => {
-        const tabOrder = ["categories", "projectDetails", "imagesVideo", "location", "floorDetails", "seoSettings"];
+        const tabOrder = ["categories", "projectDetails", "imagesVideo", "location", "seoSettings"];
         const currentIndex = tabOrder.indexOf(activeTab);
         const targetIndex = tabOrder.indexOf(value);
 
@@ -660,10 +586,6 @@ const AddProject = () => {
     const handlePostProject = async (options = {}) => {
         const { showSwal = true } = options;
         try {
-            if (!validateFloorDetails()) {
-                return;
-            }
-
             setShowLoader(true);
 
             // Compress all images before submitting
@@ -676,41 +598,12 @@ const AddProject = () => {
                 compressedGalleryImages.push(await compressImageFile(file, standardCompression));
             }
 
-            const compressedFloorFormData = [];
-            for (const field of floorFormData) {
-                if (field.floorImage) {
-                    const compressed = await compressImageFile(field.floorImage, standardCompression);
-                    compressedFloorFormData.push({ ...field, floorImage: compressed });
-                } else {
-                    compressedFloorFormData.push(field);
-                }
-            }
-
             const compressedDocuments = [];
             for (const file of mediaFormData.documents) {
                 compressedDocuments.push(await compressImageFile(file, standardCompression));
             }
 
-            const plans = []; // Initialize an empty array for plans
-
-            // Loop through floorFields and push each entry into plans array
-            for (const field of compressedFloorFormData) {
-                const title = field.floorTitle;
-                const document = field.floorImage;
-
-                plans.push({
-                    id: "",
-                    title: title,
-                    document: document || "",
-                    unit_code: (field.unitCode || "").trim().toUpperCase(),
-                    price: field.price !== "" ? field.price : null,
-                    currency: (field.currency || "USD").toUpperCase(),
-                    total_units: field.totalUnits !== "" ? field.totalUnits : null,
-                    available_units: field.availableUnits !== "" ? field.availableUnits : null,
-                    unit_status: field.unitStatus || "available",
-                    features: field.dynamicFeatures || {},
-                });
-            }
+            const plans = [];
 
             // Format translations for API
             const formattedTranslations = translations.map((translation, index) => ({
@@ -786,7 +679,6 @@ const AddProject = () => {
                 titleImage: compressedTitleImage?.size || 0,
                 galleryImages: compressedGalleryImages.reduce((s, f) => s + (f?.size || 0), 0),
                 documents: 0,
-                floorPlans: compressedFloorFormData.reduce((s, f) => s + (f.floorImage?.size || 0), 0),
             };
             const totalBytes = Object.values(sizes).reduce((a, b) => a + b, 0);
 
@@ -836,6 +728,10 @@ const AddProject = () => {
                 queryClient.invalidateQueries({ queryKey: ['homePageMap'] });
                 queryClient.invalidateQueries({ queryKey: ['homePageCities'] });
                 queryClient.invalidateQueries({ queryKey: ['homePageAddBanners'] });
+
+                const projectSlug = response?.data?.slug_id;
+                const isUserRoute = router?.asPath?.includes("/user/");
+
                 if (showSwal) {
                     await Swal.fire({
                         imageUrl: successMark.src,
@@ -854,7 +750,16 @@ const AddProject = () => {
                         confirmButtonText: t("viewProjects"),
                     });
                 }
-                router.push(router?.asPath?.includes("/user/") ? `/user/listings?tab=projects&lang=${lang}` : `/agent/projects?lang=${lang}`);
+
+                if (projectSlug) {
+                    router.push(isUserRoute
+                        ? `/user/edit-project/${projectSlug}?lang=${lang}`
+                        : `/agent/edit-project/${projectSlug}?lang=${lang}`);
+                } else {
+                    router.push(isUserRoute
+                        ? `/user/listings?tab=projects&lang=${lang}`
+                        : `/agent/projects?lang=${lang}`);
+                }
                 return true;
             } else {
                 toast.error(t(response?.message) || t("somethingWentWrong"));
@@ -1016,15 +921,6 @@ const AddProject = () => {
                             handleRemoveGalleryImages={handleRemoveGalleryImages}
                             handleRemoveDocuments={handleRemoveDocuments}
                             isCustomVideoUpload={isCustomVideoUpload}
-                        />
-                    )}
-
-                    {activeTab === "floorDetails" && (
-                        <FloorDetails
-                            floorFormData={floorFormData}
-                            setFloorFormData={setFloorFormData}
-                            handleCheckRequiredFields={handleCheckRequiredFields}
-                            featureParameters={selectedCategory?.parameter_types?.filter(p => p.type === "feature") || []}
                         />
                     )}
 

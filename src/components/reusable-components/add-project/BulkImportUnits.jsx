@@ -1,6 +1,6 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { FaFileCsv, FaFileExcel, FaTimes, FaCheck, FaExclamationTriangle, FaUpload, FaDownload, FaPlus } from "react-icons/fa";
+import { FaFileCsv, FaFileExcel, FaTimes, FaCheck, FaExclamationTriangle, FaUpload, FaDownload, FaPlus, FaImage } from "react-icons/fa";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "@/components/context/TranslationContext";
 import { previewImportUnitsApi, bulkImportUnitsApi } from "@/api/apiRoutes";
@@ -13,6 +13,18 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
     const [loading, setLoading] = useState(false);
     const [importing, setImporting] = useState(false);
     const [validationErrors, setValidationErrors] = useState([]);
+    const [rowImages, setRowImages] = useState({});
+    const [sameAsPrevious, setSameAsPrevious] = useState({});
+    const [previewImages, setPreviewImages] = useState({});
+    const fileInputRefs = useRef({});
+
+    useEffect(() => {
+        return () => {
+            Object.values(previewImages).forEach(url => {
+                if (url) URL.revokeObjectURL(url);
+            });
+        };
+    }, [previewImages]);
 
     const onDrop = useCallback((acceptedFiles) => {
         const f = acceptedFiles[0];
@@ -20,6 +32,9 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
             setFile(f);
             setPreview(null);
             setValidationErrors([]);
+            setRowImages({});
+            setSameAsPrevious({});
+            setPreviewImages({});
         }
     }, []);
 
@@ -45,8 +60,18 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
             if (!res.error) {
                 setPreview(res.data);
                 setValidationErrors(res.data.errors || []);
+                const total = res.data.preview?.length || 0;
+                const initialImages = {};
+                for (let i = 0; i < total; i++) initialImages[i] = null;
+                setRowImages(initialImages);
+                const initialPrev = {};
+                for (let i = 0; i < total; i++) initialPrev[i] = null;
+                setPreviewImages(initialPrev);
+                const initialSame = {};
+                for (let i = 1; i < total; i++) initialSame[i] = false;
+                setSameAsPrevious(initialSame);
                 if (res.data.errors?.length > 0) {
-                    toast.warning(`${res.data.errors.length} row(s) have validation errors`);
+                    toast.error(`${res.data.errors.length} row(s) have validation errors`);
                 } else {
                     toast.success(`${res.data.valid_rows} row(s) ready to import`);
                 }
@@ -60,17 +85,61 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
         }
     };
 
+    const handleRowImage = (index, file) => {
+        if (previewImages[index]) URL.revokeObjectURL(previewImages[index]);
+        setRowImages(prev => ({ ...prev, [index]: file }));
+        setPreviewImages(prev => ({ ...prev, [index]: file ? URL.createObjectURL(file) : null }));
+        if (file) {
+            setSameAsPrevious(prev => ({ ...prev, [index]: false }));
+        }
+    };
+
+    const handleSameAsPrevious = (index, checked) => {
+        setSameAsPrevious(prev => ({ ...prev, [index]: checked }));
+        if (checked) {
+            if (previewImages[index]) URL.revokeObjectURL(previewImages[index]);
+            setRowImages(prev => ({ ...prev, [index]: null }));
+            setPreviewImages(prev => ({ ...prev, [index]: null }));
+        }
+    };
+
     const handleImport = async () => {
-        if (!file) return;
+        if (!file || !preview) return;
+
+        const rows = preview.preview;
+        const hasImage = Object.values(rowImages).some(v => v !== null);
+        const hasSameAsPrev = Object.values(sameAsPrevious).some(v => v === true);
+        const needsImage = rows.some((row, i) => {
+            const isSold = row.unit_status === "sold_out";
+            const isReserved = row.unit_status === "low_stock";
+            return !isSold && !isReserved && !rowImages[i] && !sameAsPrevious[i];
+        });
+
+        if (needsImage && !hasImage && !hasSameAsPrev && rows.length > 0) {
+            const wantsToContinue = window.confirm(
+                "No images will be uploaded for available unit types. Sold/reserved units will be imported as references. Continue anyway?"
+            );
+            if (!wantsToContinue) return;
+        }
 
         setImporting(true);
         try {
-            const res = await bulkImportUnitsApi(projectId, file);
+            const imagesToUpload = {};
+            Object.entries(rowImages).forEach(([key, val]) => {
+                if (val) imagesToUpload[key] = val;
+            });
+            const res = await bulkImportUnitsApi(projectId, rows, imagesToUpload, sameAsPrevious);
             if (!res.error) {
                 toast.success(res.message);
                 setFile(null);
                 setPreview(null);
                 setValidationErrors([]);
+                setRowImages({});
+                setSameAsPrevious({});
+                Object.values(previewImages).forEach(url => {
+                    if (url) URL.revokeObjectURL(url);
+                });
+                setPreviewImages({});
                 if (onImportComplete) {
                     onImportComplete();
                 }
@@ -85,12 +154,20 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
     };
 
     const handleReset = () => {
+        Object.values(previewImages).forEach(url => {
+            if (url) URL.revokeObjectURL(url);
+        });
         setFile(null);
         setPreview(null);
         setValidationErrors([]);
+        setRowImages({});
+        setSameAsPrevious({});
+        setPreviewImages({});
     };
 
     const fileIcon = file?.name?.endsWith(".csv") ? FaFileCsv : FaFileExcel;
+
+    const totalRows = preview?.preview?.length || 0;
 
     return (
         <div className="space-y-4 rounded-lg border border-gray-200 bg-white p-4">
@@ -162,7 +239,7 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
             )}
 
             {preview && preview.preview?.length > 0 && (
-                <div className="max-h-48 overflow-y-auto rounded-lg border border-gray-200">
+                <div className="overflow-x-auto rounded-lg border border-gray-200">
                     <table className="min-w-full divide-y divide-gray-200 text-xs">
                         <thead className="bg-gray-50">
                             <tr>
@@ -171,7 +248,11 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
                                 <th className="px-2 py-1.5 text-left font-medium text-gray-500">{t("unitCode")}</th>
                                 <th className="px-2 py-1.5 text-right font-medium text-gray-500">{t("price")}</th>
                                 <th className="px-2 py-1.5 text-right font-medium text-gray-500">{t("total")}</th>
+                                <th className="px-2 py-1.5 text-right font-medium text-gray-500">{t("sold")}</th>
+                                <th className="px-2 py-1.5 text-right font-medium text-gray-500">{t("reserved")}</th>
                                 <th className="px-2 py-1.5 text-center font-medium text-gray-500">{t("status")}</th>
+                                <th className="px-2 py-1.5 text-center font-medium text-gray-500">{t("image")}</th>
+                                <th className="px-2 py-1.5 text-center font-medium text-gray-500">{t("usePrevious")}</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -184,8 +265,18 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
                                         {row.price ? `${row.currency} ${Number(row.price).toLocaleString()}` : "-"}
                                     </td>
                                     <td className="px-2 py-1 text-right text-gray-600">{row.total_units || "-"}</td>
+                                    <td className="px-2 py-1 text-right text-gray-600">{row.sold_units || "-"}</td>
+                                    <td className="px-2 py-1 text-right text-gray-600">{row.reserved_units || "-"}</td>
                                     <td className="px-2 py-1 text-center">
-                                        {row.exists ? (
+                                        {row.unit_status === "sold_out" ? (
+                                            <span className="inline-flex items-center gap-0.5 text-red-600 font-medium">
+                                                {t("sold")}
+                                            </span>
+                                        ) : row.unit_status === "low_stock" ? (
+                                            <span className="inline-flex items-center gap-0.5 text-amber-600 font-medium">
+                                                {t("reserved")}
+                                            </span>
+                                        ) : row.exists ? (
                                             <span className="inline-flex items-center gap-0.5 text-blue-600">
                                                 <FaCheck size={10} /> {t("update")}
                                             </span>
@@ -195,10 +286,79 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
                                             </span>
                                         )}
                                     </td>
+                                    <td className="px-2 py-1 text-center">
+                                        {row.unit_status === "sold_out" || row.unit_status === "low_stock" ? (
+                                            <span className="text-[10px] text-gray-400 italic">—</span>
+                                        ) : (
+                                        <div className="flex flex-col items-center gap-1">
+                                            {previewImages[i] ? (
+                                                <div className="relative">
+                                                    <img
+                                                        src={previewImages[i]}
+                                                        alt="preview"
+                                                        className="h-10 w-10 rounded object-cover"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRowImage(i, null)}
+                                                        className="absolute -right-1 -top-1 rounded-full bg-red-500 p-0.5 text-white"
+                                                    >
+                                                        <FaTimes size={8} />
+                                                    </button>
+                                                </div>
+                                            ) : sameAsPrevious[i] ? (
+                                                <span className="text-[10px] text-gray-400 italic">{t("willUsePrev")}</span>
+                                            ) : (
+                                                <FaImage className="text-gray-300" size={20} />
+                                            )}
+                                            <input
+                                                ref={el => fileInputRefs.current[i] = el}
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/jpg,image/gif,image/webp"
+                                                className="hidden"
+                                                onChange={e => {
+                                                    const f = e.target.files?.[0];
+                                                    if (f) handleRowImage(i, f);
+                                                    e.target.value = "";
+                                                }}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => fileInputRefs.current[i]?.click()}
+                                                disabled={sameAsPrevious[i]}
+                                                className={`text-[10px] underline ${
+                                                    sameAsPrevious[i]
+                                                        ? "cursor-not-allowed text-gray-300"
+                                                        : "text-teal-600 hover:text-teal-700"
+                                                }`}
+                                            >
+                                                {previewImages[i] ? t("change") : t("upload")}
+                                            </button>
+                                        </div>
+                                        )}
+                                    </td>
+                                    <td className="px-2 py-1 text-center">
+                                        {row.unit_status === "sold_out" || row.unit_status === "low_stock" ? (
+                                            <span className="text-[10px] text-gray-400 italic">—</span>
+                                        ) : (
+                                        <input
+                                            type="checkbox"
+                                            disabled={i === 0}
+                                            checked={sameAsPrevious[i] || false}
+                                            onChange={e => handleSameAsPrevious(i, e.target.checked)}
+                                            className="h-3.5 w-3.5 rounded border-gray-300 text-teal-600 focus:ring-teal-500"
+                                        />
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
+                    {totalRows > 0 && (
+                        <div className="border-t border-gray-200 bg-gray-50 px-2 py-1.5 text-xs text-gray-500">
+                            {Object.values(rowImages).filter(v => v !== null).length} {t("imagesSelected")} — {totalRows} {t("rowsTotal")}
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -213,7 +373,7 @@ const BulkImportUnits = ({ projectId, onImportComplete }) => {
                         {loading ? t("previewing") : t("preview")}
                     </Button>
                 )}
-                {preview && validationErrors.length === 0 && (
+                {preview && (
                     <Button
                         type="button"
                         onClick={handleImport}

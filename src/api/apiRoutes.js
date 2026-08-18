@@ -508,7 +508,27 @@ export const updatePropertyStatusApi = async ({
   return res.data;
 };
 
-// 34. Check Package Limit
+// 34. Update Unit Status (individual or bulk)
+export const updateUnitStatusApi = async ({
+  property_ids = "",
+  unit_status = "",
+}) => {
+  const formData = createFilteredFormData({ property_ids, unit_status });
+  const res = await api.post(apiEndpoints.UPDATE_UNIT_STATUS, formData);
+  return res.data;
+};
+
+// 35. Update Plan Status (from project details)
+export const updatePlanStatusApi = async ({
+  plan_id = "",
+  unit_status = "",
+}) => {
+  const formData = createFilteredFormData({ plan_id, unit_status });
+  const res = await api.post(apiEndpoints.UPDATE_PLAN_STATUS, formData);
+  return res.data;
+};
+
+// 36. Check Package Limit
 export const checkPackageLimitApi = async ({ type = "" }) => {
   const params = { type };
   const res = await api.get(apiEndpoints.CHECK_PACKAGE_LIMIT, { params });
@@ -2496,10 +2516,18 @@ export const previewImportUnitsApi = async (projectId, file) => {
   return res.data;
 };
 
-export const bulkImportUnitsApi = async (projectId, file) => {
+export const bulkImportUnitsApi = async (projectId, rows, images, sameAsPrevious) => {
   const formData = new FormData();
   formData.append("project_id", projectId);
-  formData.append("file", file);
+  formData.append("rows", JSON.stringify(rows));
+  formData.append("same_as_previous", JSON.stringify(sameAsPrevious));
+  if (images) {
+    Object.entries(images).forEach(([key, file]) => {
+      if (file) {
+        formData.append(`images[${key}]`, file);
+      }
+    });
+  }
   const res = await api.post(apiEndpoints.BULK_IMPORT_UNITS, formData);
   return res.data;
 };

@@ -1,5 +1,5 @@
 "use client";
-import { changePropertyStatusApi, deletePropertyApi, getAddedPropertiesApi, renewListingApi, getPackagesApi, getPaymentSettingsApi, activateListingApi } from '@/api/apiRoutes';
+import { changePropertyStatusApi, deletePropertyApi, getAddedPropertiesApi, renewListingApi, getPackagesApi, getPaymentSettingsApi, activateListingApi, updateUnitStatusApi } from '@/api/apiRoutes';
 import PremiumIcon from "@/assets/premium.svg";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -143,6 +143,56 @@ const AgentProperties = () => {
 
     const [isPageLoading, setIsPageLoading] = useState(false);
     const itemsPerPage = 8; // Match with limit variable
+    const [selectedIds, setSelectedIds] = useState([]);
+    const [bulkStatus, setBulkStatus] = useState('');
+
+    const handleSelectAll = (e) => {
+        if (e.target.checked) {
+            setSelectedIds(getFeaturedListing.map(p => p.id));
+        } else {
+            setSelectedIds([]);
+        }
+    };
+
+    const handleSelectOne = (id) => {
+        setSelectedIds(prev =>
+            prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+        );
+    };
+
+    const handleBulkStatusChange = async (status) => {
+        if (selectedIds.length === 0) return;
+        try {
+            const idsStr = selectedIds.join(',');
+            const res = await updateUnitStatusApi({ property_ids: idsStr, unit_status: status });
+            if (!res?.error) {
+                toast.success(t('statusUpdatedSuccessfully'));
+                setSelectedIds([]);
+                setBulkStatus('');
+                fetchProperties();
+            } else {
+                toast.error(res?.message || t('somethingWentWrong'));
+            }
+        } catch (err) {
+            console.error('Bulk status update error:', err);
+            toast.error(t('somethingWentWrong'));
+        }
+    };
+
+    const handleIndividualStatusChange = async (propertyId, status) => {
+        try {
+            const res = await updateUnitStatusApi({ property_ids: String(propertyId), unit_status: status });
+            if (!res?.error) {
+                toast.success(t('statusUpdatedSuccessfully'));
+                fetchProperties();
+            } else {
+                toast.error(res?.message || t('somethingWentWrong'));
+            }
+        } catch (err) {
+            console.error('Status update error:', err);
+            toast.error(t('somethingWentWrong'));
+        }
+    };
 
     // Handle featuring a property
     const handleFeatureClick = (e, propertyId) => {
@@ -427,7 +477,45 @@ const AgentProperties = () => {
 
 
     // Define table columns configuration
+    const unitStatusOptions = [
+        { value: 'available', label: t('available'), color: 'text-green-600 bg-green-50' },
+        { value: 'low_stock', label: t('lowStock'), color: 'text-amber-600 bg-amber-50' },
+        { value: 'sold_out', label: t('sold'), color: 'text-red-600 bg-red-50' },
+        { value: 'inactive', label: t('inactive'), color: 'text-gray-600 bg-gray-50' },
+    ];
+
+    const getStatusBadge = (status) => {
+        const opt = unitStatusOptions.find(o => o.value === status);
+        if (!opt) return <span className="text-xs text-gray-400">-</span>;
+        return (
+            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${opt.color}`}>
+                {opt.label}
+            </span>
+        );
+    };
+
     const tableColumns = [
+        {
+            header: (
+                <input
+                    type="checkbox"
+                    onChange={handleSelectAll}
+                    checked={selectedIds.length === getFeaturedListing.length && getFeaturedListing.length > 0}
+                    className="rounded border-gray-300"
+                />
+            ),
+            accessor: "id",
+            align: "center",
+            className: "w-10",
+            renderCell: (elem) => (
+                <input
+                    type="checkbox"
+                    checked={selectedIds.includes(elem.id)}
+                    onChange={() => handleSelectOne(elem.id)}
+                    className="rounded border-gray-300"
+                />
+            ),
+        },
         {
             header: t("property"),
             accessor: "title",
@@ -582,6 +670,33 @@ const AgentProperties = () => {
             },
         },
         {
+            header: t("unitStatus"),
+            accessor: "unit_status",
+            align: "center",
+            renderCell: (elem) => {
+                if (!elem.is_project_unit) return <span className="text-xs text-gray-400">-</span>;
+                return (
+                    <Select
+                        value={elem.unit_status || 'available'}
+                        onValueChange={(val) => handleIndividualStatusChange(elem.id, val)}
+                    >
+                        <SelectTrigger className="h-8 w-32 text-xs border rounded">
+                            <SelectValue>
+                                {getStatusBadge(elem.unit_status || 'available')}
+                            </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                            {unitStatusOptions.map(opt => (
+                                <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                                    {opt.label}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                );
+            },
+        },
+        {
             header: t("action"),
             accessor: "id",
             align: "center",
@@ -728,6 +843,43 @@ const AgentProperties = () => {
                 </div>
             </div>
 
+            {/* Property Listing Table */}
+            {/* Bulk Actions */}
+            {selectedIds.length > 0 && (
+                <div className="flex items-center gap-3 px-4 py-3 bg-blue-50 border border-blue-200 rounded-lg my-2">
+                    <span className="text-sm font-medium text-blue-700">{selectedIds.length} {t('selected')}</span>
+                    <div className="flex items-center gap-2">
+                        <Select value={bulkStatus} onValueChange={setBulkStatus}>
+                            <SelectTrigger className="h-8 w-36 text-xs">
+                                <SelectValue placeholder={t('changeStatusTo')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {unitStatusOptions.map(opt => (
+                                    <SelectItem key={opt.value} value={opt.value} className="text-xs">
+                                        {opt.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Button
+                            size="sm"
+                            className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                            disabled={!bulkStatus}
+                            onClick={() => handleBulkStatusChange(bulkStatus)}
+                        >
+                            {t('apply')}
+                        </Button>
+                        <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 text-xs text-gray-500"
+                            onClick={() => { setSelectedIds([]); setBulkStatus(''); }}
+                        >
+                            {t('cancel')}
+                        </Button>
+                    </div>
+                </div>
+            )}
             {/* Property Listing Table */}
             <div className="col-span-12 my-4">
                 <div className="bg-white rounded-xl overflow-hidden">

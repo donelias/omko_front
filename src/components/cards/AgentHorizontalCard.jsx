@@ -34,7 +34,7 @@ const AgentHorizontalCard = ({ agentDetails, isFeatureAvailable = false, setShow
     is_appointment_available: isAppointmentAvailable,
     country_code = "",
   } = agentDetails || {};
-  address = agentDetails?.agent_profile?.agent_address;
+  address = agentDetails?.agent_profile?.agent_address || agentDetails?.address;
   facebook_id = agentDetails?.agent_profile?.facebook_id;
   twitter_id = agentDetails?.agent_profile?.twitter_id;
   youtube_id = agentDetails?.agent_profile?.youtube_id;

@@ -92,7 +92,7 @@ const FloorDetails = ({
         const lastFloorIndex = floorFormData.length - 1;
         const lastFloor = floorFormData[lastFloorIndex];
 
-        if (lastFloor.floorTitle.trim() === "") {
+        if (lastFloor.floorTitle.trim() === "" || !lastFloor.floorImage) {
             return toast.error(t("currentFloorDetailsIsRequired"));
         } else {
             setFloorFormData((prev) => [...prev, getDefaultFloor()]);
@@ -248,6 +248,7 @@ const FloorDetails = ({
         const hasAnyFloorData = floorFormData.some((floor) =>
             [
                 floor.floorTitle,
+                floor.floorImage,
                 floor.unitCode,
                 floor.price,
                 floor.currency,
@@ -271,6 +272,10 @@ const FloorDetails = ({
 
             if (!floor.floorTitle?.trim()) {
                 errors.floorTitle = t("floorTitleIsRequired");
+            }
+
+            if (!floor.floorImage) {
+                errors.floorImage = t("floorImageIsRequired");
             }
 
             const normalizedCode = (floor.unitCode || "").trim().toUpperCase();
@@ -432,6 +437,7 @@ const FloorDetails = ({
                                         </div>
                                     )}
                                 </div>
+                                {errors.floorImage && <p className="mt-1 text-xs text-red-600">{errors.floorImage}</p>}
                                 {floorFormData.length > 1 && (
                                     <button
                                         type="button"
