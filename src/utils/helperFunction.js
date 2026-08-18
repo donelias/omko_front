@@ -871,9 +871,8 @@ export const handlePropertyAddCheck = async (e, router, t = () => { }, isUser = 
     "agent_name",
     "agent_email",
     "agent_mobile",
-    "agent_profile_photo",
     "agent_address",
-  ].every((key) => userData?.agent_profile?.[key]);
+  ].every((key) => userData?.agent_profile?.[key]) && (userData?.agent_profile?.agent_profile_photo || userData?.profile);
 
   if (!isProfileComplete) {
     return showSwal({
@@ -959,9 +958,8 @@ export const handleProjectAddCheck = async (e, router, t = () => { }, isUser = f
     "agent_name",
     "agent_email",
     "agent_mobile",
-    "agent_profile_photo",
     "agent_address",
-  ].every((key) => userData?.agent_profile?.[key]);
+  ].every((key) => userData?.agent_profile?.[key]) && (userData?.agent_profile?.agent_profile_photo || userData?.profile);
 
   if (!isProfileComplete) {
     return showSwal({

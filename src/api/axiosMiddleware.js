@@ -12,7 +12,7 @@ const baseURL = `${url || ""}${subUrl || ""}`.replace(/([^:]\/)\/+/, "$1");
 
 const api = axios.create({
   baseURL,
-  timeout: 15000,
+  timeout: 120000,
 });
 
 const getStoredToken = async () => {
