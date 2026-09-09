@@ -1,51 +1,37 @@
-# Laravel
-/vendor/
-/node_modules/
-/.env
-/.env.local
-/.env.*.local
-/storage/logs/*
-!/storage/logs/.gitkeep
-/bootstrap/cache/*
-!/bootstrap/cache/.gitkeep
-/public/uploads/*
-!/public/uploads/.gitkeep
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
 
-# IDE
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+
+# misc
 .DS_Store
+*.pem
 
-# Compiled files
-*.class
-*.pyc
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# Testing
-/coverage/
-.phpunit.result.cache
+# local env files
+.env
+.env*.local
 
-# Temporary files
-*.tmp
-*.temp
-*.bak
-_omko.do.zip
-adminrealestate.zip
-real_estate_admin.zip
-realestate.zip
+# vercel
+.vercel
 
-# Downloaded backups
-Descargado desde hostinger/
+# typescript
+*.tsbuildinfo
+next-env.d.ts
 
-# Local deployment scripts (for production use)
-launch-dev.sh
-start-dev.sh
-test_production_connectivity.sh
-pre_deploy_check.sh
-
-# Generated documentation (keep these but don't need in tracking)
-# BACKEND_ACTIVATION_GUIDE.md
-# CONNECTIVITY_STATUS_REPORT.md
-# DEPLOYMENT_CHECKLIST.md
+# pm2 logs
+/logs/

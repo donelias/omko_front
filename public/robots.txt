@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /user/
+Disallow: /agent/
+Disallow: /payment/
+Disallow: /my-property/
+Disallow: /my-project/
+Disallow: /all-personalized-feeds/
+Disallow: /compare-properties/
+Disallow: /properties-on-map/
+
+Sitemap: https://properties.omko.do/sitemap.xml
