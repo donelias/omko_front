@@ -25,6 +25,17 @@ const nextConfig = {
   images: {
     remotePatterns: imageHosts,
     unoptimized,
+    // Formatos modernos en orden de preferencia: AVIF (~30% + pequeño que WebP)
+    // y WebP (~25% + pequeño que JPEG). JPEG se sirve siempre como fallback.
+    formats: ["image/avif", "image/webp"],
+    // srcset responsive para dispositivos (además de los tamaños por defecto).
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [50, 100, 150, 200, 300, 400, 600, 800, 1000, 1200],
+    // Caché en navegador/CDN de 1 año para imágenes optimizadas.
+    minimumCacheTTL: 31536000,
+    // Las imágenes del admin incluyen SVG (iconos de categoría/ciudad).
+    dangerouslyAllowSVG: true,
+    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
   },
   trailingSlash: true,
   devIndicators: {
