@@ -6,7 +6,8 @@ import {
   FaEnvelope,
   FaMapMarkerAlt,
   FaPhoneAlt,
-  FaWhatsapp
+  FaWhatsapp,
+  FaUser
 } from "react-icons/fa";
 import { VerifiedAgentBadge } from "@/utils/helperFunction";
 import Link from "next/link";
@@ -139,12 +140,18 @@ const AgentHorizontalCard = ({ agentDetails, isFeatureAvailable = false, setShow
           }`}
         >
           <div className="relative w-full h-full overflow-hidden rounded-xl">
-            <ImageWithPlaceholder
-              src={imgSrc}
-              alt={`${name} - Real Estate Agent`}
-              className="w-full h-full md:aspect-square object-cover"
-              loading="lazy"
-            />
+            {imgSrc ? (
+              <ImageWithPlaceholder
+                src={imgSrc}
+                alt={`${name} - Real Estate Agent`}
+                className="w-full h-full md:aspect-square object-cover"
+                loading="lazy"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center rounded-xl bg-gray-100 md:aspect-square">
+                <FaUser className="h-1/3 w-1/3 text-gray-300" />
+              </div>
+            )}
           </div>
         </div>
 

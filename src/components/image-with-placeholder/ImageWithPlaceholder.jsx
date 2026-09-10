@@ -58,6 +58,7 @@ export default function ImageWithPlaceholder({
       blurDataURL={blurDataURL}
       loading={priority ? "eager" : loading}
       priority={priority}
+      quality={90}
       className={`${isPlaceholder ? "opacity-40 !object-contain" : ""} ${className} `}
     />
   );

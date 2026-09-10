@@ -28,6 +28,9 @@ const nextConfig = {
     // Formatos modernos en orden de preferencia: AVIF (~30% + pequeño que WebP)
     // y WebP (~25% + pequeño que JPEG). JPEG se sirve siempre como fallback.
     formats: ["image/avif", "image/webp"],
+    // Calidades permitidas por el optimizer (Next 16 exige allowlist, default [75]).
+    // 90 lo usa ImageWithPlaceholder para nitidez en galleries grandes.
+    qualities: [75, 90],
     // srcset responsive para dispositivos (además de los tamaños por defecto).
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [50, 100, 150, 200, 300, 400, 600, 800, 1000, 1200],
