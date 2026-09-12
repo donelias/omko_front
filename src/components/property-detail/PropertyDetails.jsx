@@ -36,6 +36,8 @@ import { useQuery } from "@tanstack/react-query";
 import AdBanner from "./AdBanner";
 import VirtualTour360 from "./VirtualTour360";
 import { trackEvent } from "@/utils/analytics";
+import { initMetaPixel, trackMeta } from "@/utils/metaPixel";
+import { getFbclid } from "@/utils/utm";
 import AvailabilityBookingWidget from "./AvailabilityBookingWidget";
 
 const PropertyDetails = ({ initialData, seoData }) => {
@@ -171,6 +173,32 @@ const PropertyDetails = ({ initialData, seoData }) => {
       setIsLoading(false); // Always set loading to false when done
     }
   };
+
+  // Meta Ads: inicializa el pixel del agente dueño de la propiedad y dispara
+  // ViewContent. El pixel_id viene de la integración del agente (frontend).
+  const metaPixelEventRef = useRef(null);
+
+  useEffect(() => {
+    if (!propertyDetails?.id) return;
+
+    const ownerPixel = propertyDetails?.pixel_id ?? propertyDetails?.customer?.pixel_id;
+
+    if (ownerPixel) {
+      initMetaPixel(ownerPixel);
+      setTimeout(() => {
+        if (metaPixelEventRef.current !== `${ownerPixel}:${propertyDetails.id}`) {
+          metaPixelEventRef.current = `${ownerPixel}:${propertyDetails.id}`;
+          trackMeta("ViewContent", {
+            content_name: propertyDetails?.title || query?.slug,
+            content_id: String(propertyDetails.id),
+            content_category: "realestate",
+            value: propertyDetails?.price != null ? Number(propertyDetails.price) : undefined,
+            currency: propertyDetails?.currency || "USD",
+          });
+        }
+      }, 300);
+    }
+  }, [propertyDetails?.id]);
 
   // SSR-aware data load:
   // - On mount with server data for the current slug: keep it, no refetch.

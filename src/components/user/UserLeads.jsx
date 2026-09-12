@@ -29,6 +29,7 @@ const originLabel = (origin, fallback) => {
     whatsapp: "WhatsApp",
     email: "Email",
     pagina: fallback("webPage") || "Página web",
+    meta: "Meta Ads",
   };
   return map[origin] || origin;
 };

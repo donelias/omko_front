@@ -168,7 +168,7 @@ export const checkAgentBookingAvailabilityApi = async ({
 };
 
 
-// 86. Book Appointment API
+// 86. Book Appointment API (authenticated user)
 export const bookAppointmentApi = async ({
   property_id,
   meeting_type,
@@ -186,6 +186,33 @@ export const bookAppointmentApi = async ({
     notes
   });
   const res = await api.post(apiEndpoints.BOOK_APPOINTMENT, formData);
+  return res.data;
+};
+
+// 86b. Book Appointment API (guest / visitor, sin cuenta)
+export const bookGuestAppointmentApi = async ({
+  property_id,
+  meeting_type,
+  date,
+  start_time,
+  end_time,
+  notes,
+  nombre,
+  email,
+  telefono
+}) => {
+  const formData = createFilteredFormData({
+    property_id,
+    meeting_type,
+    date,
+    start_time,
+    end_time,
+    notes,
+    nombre,
+    email,
+    telefono
+  });
+  const res = await api.post(apiEndpoints.BOOK_APPOINTMENT_GUEST, formData);
   return res.data;
 };
 

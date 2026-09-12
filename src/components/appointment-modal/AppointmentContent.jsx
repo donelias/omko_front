@@ -43,6 +43,11 @@ const AppointmentContent = ({
     handleLoadMoreProperties = () => { },
     hasMore = false,
     isMobile = false,
+    isGuest = false,
+    guestName = "",
+    guestPhone = "",
+    guestEmail = "",
+    onGuestChange = () => { },
 }) => {
     const t = useTranslation();
     // Internal state for managing appointment data
@@ -186,6 +191,41 @@ const AppointmentContent = ({
                 onChangeClick={onResetAppointmentDetails}
                 isMobile={isMobile}
             />
+            {isGuest && (
+                <div className="newBorder rounded-2xl bg-white p-3 sm:p-4">
+                    <h3 className="brandColor font-medium text-sm sm:text-base pb-3 sm:pb-4">
+                        {t("yourContactDetails") || "Tus datos de contacto"}
+                        <span className="leadColor font-medium text-xs sm:text-sm ml-2">
+                            *
+                        </span>
+                    </h3>
+                    <div className="grid gap-3">
+                        <input
+                            type="text"
+                            value={guestName}
+                            onChange={(e) => onGuestChange("name", e.target.value)}
+                            placeholder={t("yourName") || "Tu nombre *"}
+                            className="w-full newBorder p-3 sm:p-4 primaryBackgroundBg leadColor outline-none rounded-lg text-sm sm:text-base"
+                        />
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <input
+                                type="tel"
+                                value={guestPhone}
+                                onChange={(e) => onGuestChange("phone", e.target.value)}
+                                placeholder={t("yourPhone") || "Tu teléfono"}
+                                className="w-full newBorder p-3 sm:p-4 primaryBackgroundBg leadColor outline-none rounded-lg text-sm sm:text-base"
+                            />
+                            <input
+                                type="email"
+                                value={guestEmail}
+                                onChange={(e) => onGuestChange("email", e.target.value)}
+                                placeholder={t("yourEmail") || "Tu email"}
+                                className="w-full newBorder p-3 sm:p-4 primaryBackgroundBg leadColor outline-none rounded-lg text-sm sm:text-base"
+                            />
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className='newBorder rounded-2xl bg-white p-3 sm:p-4'>
                 <h3 className='brandColor font-medium text-sm sm:text-base pb-3 sm:pb-4'>
                     {t("message")}

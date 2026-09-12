@@ -19,3 +19,4 @@ export * from './routes/lead';
 export * from './routes/savedSearch';
 export * from './routes/shortTerm';
 export * from './routes/projectInventory';
+export * from './routes/adIntegration';

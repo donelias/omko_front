@@ -20,6 +20,7 @@ import UserInterested from './UserInterested'
 import UserSavedSearches from './UserSavedSearches'
 import UserShortTermReservations from './UserShortTermReservations'
 import UserLeads from './UserLeads'
+import UserAdIntegrations from './UserAdIntegrations'
 
 const UserRootSkeleton = () => (
     <div className="flex w-full flex-1 flex-col gap-4 rounded-2xl border newBorderColor bg-white p-4 sm:p-6">
@@ -100,6 +101,7 @@ const UserRoot = ({ notificationData, isLoading }) => {
         "saved-searches": UserSavedSearches,
         "my-reservations": UserShortTermReservations,
         "my-leads": UserLeads,
+        "marketing": UserAdIntegrations,
     }
 
     // Get the Component to render based on the main section

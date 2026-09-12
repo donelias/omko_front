@@ -16,6 +16,9 @@ import { setStoriesData, setActiveAgentId } from "@/redux/slices/storiesSlice";
 import StoryViewer from "@/components/stories/StoryViewer";
 import LoginModal from "@/components/modal/LoginModal";
 import GuestLeadForm from "./GuestLeadForm";
+import { submitGuestLeadApi } from "@/api/apiRoutes";
+import { getLeadTraffic } from "@/utils/utm";
+import { trackLeadMetaEvent } from "@/utils/metaPixel";
 import { trackEvent } from "@/utils/analytics";
 
 const OwnerDetailsCard = ({
@@ -41,6 +44,9 @@ const OwnerDetailsCard = ({
   const webSettings = useSelector((state) => state?.WebSetting?.data);
   const { lang } = router?.query;
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showWhatsAppLead, setShowWhatsAppLead] = useState(false);
+  const [waForm, setWaForm] = useState({ nombre: "", telefono: "" });
+  const [waSubmitting, setWaSubmitting] = useState(false);
   const isAgentOwner = ownerData?.role_context === "agent";
   const agentProfile = ownerData?.agent_profile;
   const isAdmin = ownerData?.is_admin;
@@ -383,14 +389,97 @@ const OwnerDetailsCard = ({
               <span className="blackTextColor text-sm font-semibold">
                 {t("whatsapp")}
               </span>
-              <Link
-                href={`https://wa.me/${whatsappNumber}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="leadColor text-sm"
+              <button
+                type="button"
+                className="leadColor text-sm text-left cursor-pointer"
+                onClick={() => {
+                  if (userCurrentId) {
+                    window.open(`https://wa.me/${whatsappNumber}`, "_blank", "noopener,noreferrer");
+                    return;
+                  }
+                  setWaForm({ nombre: "", telefono: "" });
+                  setShowWhatsAppLead(true);
+                }}
               >
                 {mobile}
-              </Link>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* WhatsApp guest lead capture: registra el lead antes de salir a wa.me */}
+        {showWhatsAppLead && (
+          <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 p-4">
+            <div className="newBorder w-full max-w-sm rounded-xl bg-white p-5">
+              <div className="secondaryTextColor mb-3 text-base font-semibold">
+                {(t("interestedInThisProperty") || "Me interesa esta propiedad")} — WhatsApp
+              </div>
+              <label className="mb-1 block text-sm font-medium secondaryTextColor">
+                {t("name") || "Nombre"} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                name="nombre"
+                value={waForm.nombre}
+                onChange={(e) => setWaForm({ ...waForm, nombre: e.target.value })}
+                placeholder={t("yourName") || "Tu nombre"}
+                className="primaryBackgroundBg w-full rounded-md border px-3 py-2 text-sm outline-none"
+              />
+              <label className="mb-1 mt-3 block text-sm font-medium secondaryTextColor">
+                {t("phone") || "Teléfono"} <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                name="telefono"
+                value={waForm.telefono}
+                onChange={(e) => setWaForm({ ...waForm, telefono: e.target.value })}
+                placeholder={t("yourPhone") || "Tu teléfono"}
+                className="primaryBackgroundBg w-full rounded-md border px-3 py-2 text-sm outline-none"
+              />
+              <div className="mt-4 flex gap-3">
+                <button
+                  type="button"
+                  disabled={waSubmitting}
+                  onClick={async () => {
+                    if (!waForm.nombre.trim() || !waForm.telefono.trim()) return;
+                    setWaSubmitting(true);
+                    try {
+                      const resp = await submitGuestLeadApi({
+                        property_id: ownerData?.id,
+                        agent_id: ownerData?.added_by,
+                        nombre: waForm.nombre,
+                        telefono: waForm.telefono,
+                        whatsapp: waForm.telefono,
+                        origin: "whatsapp",
+                        notas: "Contacto por WhatsApp (botón de WhatsApp de la tarjeta).",
+                        ...getLeadTraffic(),
+                      });
+                      const leadId = resp?.data?.id;
+                      if (leadId && ownerData?.customer?.pixel_id) {
+                        trackLeadMetaEvent(ownerData.customer.pixel_id, {
+                          leadId,
+                          propertyId: ownerData?.id,
+                        });
+                      }
+                    } catch (_) {
+                      /* si falla el registro, igual se abre WhatsApp */
+                    }
+                    setWaSubmitting(false);
+                    setShowWhatsAppLead(false);
+                    window.open(`https://wa.me/${whatsappNumber}`, "_blank", "noopener,noreferrer");
+                  }}
+                  className="primaryBg flex-1 rounded-lg py-2.5 text-sm font-medium text-white disabled:opacity-60"
+                >
+                  {waSubmitting ? (t("sending") || "Enviando...") : (t("continueWhatsApp") || "Continuar a WhatsApp")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowWhatsAppLead(false)}
+                  className="newBorder flex-1 rounded-lg py-2.5 text-sm font-medium secondaryTextColor"
+                >
+                  {t("cancel")}
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -424,7 +513,11 @@ const OwnerDetailsCard = ({
           <>
             {/* Guest-to-lead: visitantes no autenticados capturan interés sin login */}
             {!userCurrentId && !isProject && (
-              <GuestLeadForm propertyId={ownerData?.id} agentId={ownerData?.added_by} />
+              <GuestLeadForm
+                propertyId={ownerData?.id}
+                agentId={ownerData?.added_by}
+                pixelId={ownerData?.pixel_id ?? ownerData?.customer?.pixel_id}
+              />
             )}
             <div className="flex justify-center gap-3">
               {/* Interest button */}

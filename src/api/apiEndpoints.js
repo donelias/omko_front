@@ -113,6 +113,7 @@ export const CHECK_AGENT_APPOINTMENT_AVAILABILITY = "appointment/check-availabil
 
 // Book Appointment API Endpoint
 export const BOOK_APPOINTMENT = "appointment/request";
+export const BOOK_APPOINTMENT_GUEST = "appointment/guest-request";
 
 // agentDashboard apis 
 export const GET_AGENT_DASHBOARD_SUMMARY = "agent-dashboard/summery";
@@ -215,3 +216,8 @@ export const PROJECT_INVENTORY_ADJUST = "project-inventory/adjust";
 // FASE 8 - Leads pagados (T6 restante)
 export const LEADS_MINE = "leads/mine";
 export const LEADS_UNLOCK = "leads/unlock";
+
+// Integraciones de marketing por agente (Meta Pixel / Conversions API / WhatsApp)
+export const GET_AD_INTEGRATIONS = "agent/ad-integrations";
+export const POST_AD_INTEGRATIONS = "agent/ad-integrations";
+export const TEST_AD_INTEGRATIONS = "agent/ad-integrations/test";

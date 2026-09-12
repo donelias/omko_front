@@ -25,7 +25,7 @@ import AppointmentHeader from "./AppointmentHeader";
 import AppointmentButton from "./AppointmentButton";
 import { useTranslation } from "../context/TranslationContext";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
-import { bookAppointmentApi, checkAgentBookingAvailabilityApi, getAgentPropertiesApi, getMonthWiseTimeSchedulesApi } from "@/api/apiRoutes";
+import { bookAppointmentApi, bookGuestAppointmentApi, checkAgentBookingAvailabilityApi, getAgentPropertiesApi, getMonthWiseTimeSchedulesApi } from "@/api/apiRoutes";
 import { formatAppointmentData, formatMeetingTypes, getTimeSlotsForDate, formatAvailableDates, formatDate } from "@/utils/appointmentHelper";
 import toast from "react-hot-toast";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -43,7 +43,8 @@ const AppointmentScheduleModal = ({
     isLoading = false,
     isBookingFromProperty = false,
     handleBookingStep = () => { },
-    agentDetails: agent = {}
+    agentDetails: agent = {},
+    userData = null
 }) => {
 
     const t = useTranslation();
@@ -65,6 +66,19 @@ const AppointmentScheduleModal = ({
     const limit = 10;
     const [hasMore, setHasMore] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Invitado: no tiene sesión, así que la cita se solicita capturando sus
+  // datos en el paso de confirmación (guest-to-appointment).
+  const isGuest = !userData?.id;
+  const [guestName, setGuestName] = useState("");
+  const [guestPhone, setGuestPhone] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+
+  const handleGuestChange = (field, value) => {
+    if (field === "name") setGuestName(value);
+    if (field === "phone") setGuestPhone(value);
+    if (field === "email") setGuestEmail(value);
+  };
 
     const handleFetchAgentProperties = async (searchQuery = "", currentOffset = 0) => {
         try {
@@ -246,6 +260,23 @@ const AppointmentScheduleModal = ({
 
         setIsSubmitting(true);
         try {
+            if (isGuest) {
+                // Invitado: back-end valida disponibilidad y traslapes en la
+                // ruta pública de solicitud de cita.
+                if (!guestName.trim()) {
+                    toast.error(t("name") || "Nombre");
+                    setIsSubmitting(false);
+                    return;
+                }
+                if (!guestPhone.trim() && !guestEmail.trim()) {
+                    toast.error(t("contactRequired"));
+                    setIsSubmitting(false);
+                    return;
+                }
+                await handleSubmitAppointment();
+                return;
+            }
+
             const formattedDate = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
             const response = await checkAgentBookingAvailabilityApi({
                 agent_id: selectedProperty?.added_by,
@@ -269,15 +300,25 @@ const AppointmentScheduleModal = ({
     const handleSubmitAppointment = async () => {
         try {
             const formattedDate = `${selectedDate.getFullYear()}-${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}-${selectedDate.getDate().toString().padStart(2, '0')}`;
-            const response = await bookAppointmentApi({
+            const payload = {
                 property_id: selectedProperty?.id,
                 meeting_type: selectedMeetingType,
                 date: formattedDate,
                 start_time: selectedTimeSlot?.start_time,
                 end_time: selectedTimeSlot?.end_time,
                 notes: meetingNotes
-            });
-            if (response?.data) {
+            };
+
+            const response = isGuest
+                ? await bookGuestAppointmentApi({
+                    ...payload,
+                    nombre: guestName,
+                    email: guestEmail,
+                    telefono: guestPhone,
+                })
+                : await bookAppointmentApi(payload);
+
+            if (response?.data || (!isGuest && response?.error === false)) {
                 toast.success(t("appointmentBookingRequestSuccess"));
                 trackEvent(
                     'schedule_appointment',
@@ -455,6 +496,11 @@ const AppointmentScheduleModal = ({
                         handleLoadMoreProperties={handleLoadMoreProperties}
                         hasMore={hasMore}
                         isMobile={isMobile}
+                        isGuest={isGuest}
+                        guestName={guestName}
+                        guestPhone={guestPhone}
+                        guestEmail={guestEmail}
+                        onGuestChange={handleGuestChange}
                     />
                 </div>
 

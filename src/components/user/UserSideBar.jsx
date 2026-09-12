@@ -1,5 +1,5 @@
 import ImageWithPlaceholder from "@/components/image-with-placeholder/ImageWithPlaceholder";
-import { BiBuildingHouse, BiMessageSquareDetail, BiBell, BiDollarCircle, BiUserX, BiCreditCard, BiLogOut, BiNews, BiHeart, BiSave, BiEnvelope } from "react-icons/bi";
+import { BiBuildingHouse, BiMessageSquareDetail, BiBell, BiDollarCircle, BiUserX, BiCreditCard, BiLogOut, BiNews, BiHeart, BiSave, BiEnvelope, BiBullseye } from "react-icons/bi";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { RiAdvertisementLine } from "react-icons/ri";
 import { FaRegCalendarAlt } from "react-icons/fa";
@@ -187,6 +187,7 @@ const UserSidebar = ({ isLoading }) => {
         { icon: <BiSave className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("savedSearches") || "Búsquedas guardadas", route: `/user/saved-searches?lang=${lang}` },
         { icon: <FaRegCalendarAlt className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("myReservations") || "Mis reservas", route: `/user/my-reservations?lang=${lang}` },
         { icon: <BiEnvelope className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("myLeads") || "Mis leads", route: `/user/my-leads?lang=${lang}` },
+        { icon: <BiBullseye className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("marketing") || "Marketing / Publicidad", route: `/user/marketing?lang=${lang}` },
         { icon: <BiLogOut className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("logout"), route: `/user/logout?lang=${lang}`, onClick: handleLogout },
         { icon: <BiUserX className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("deleteAccount"), route: `/user/delete-account?lang=${lang}`, onClick: handleDeleteAccount },
     ];

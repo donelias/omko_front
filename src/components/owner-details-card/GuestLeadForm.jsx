@@ -2,13 +2,15 @@ import { useState } from "react";
 import { useTranslation } from "../context/TranslationContext";
 import { submitGuestLeadApi } from "@/api/apiRoutes";
 import toast from "react-hot-toast";
+import { getLeadTraffic } from "@/utils/utm";
+import { trackLeadMetaEvent } from "@/utils/metaPixel";
 
 /**
  * Formulario de lead para visitantes NO autenticados (guest-to-lead).
  * FASE 3 (T4): captura los datos del visitante sin forzarle a crear cuenta
  * o iniciar sesión. El lead se guarda en crm_leads (origin='formulario').
  */
-const GuestLeadForm = ({ propertyId, agentId }) => {
+const GuestLeadForm = ({ propertyId, agentId, pixelId }) => {
   const t = useTranslation();
   const [form, setForm] = useState({ nombre: "", email: "", telefono: "", notas: "" });
   const [submitting, setSubmitting] = useState(false);
@@ -33,16 +35,27 @@ const GuestLeadForm = ({ propertyId, agentId }) => {
     setSubmitting(true);
     setError("");
     try {
-      await submitGuestLeadApi({
+      const response = await submitGuestLeadApi({
         property_id: propertyId,
         agent_id: agentId,
         nombre: form.nombre,
         email: form.email,
         telefono: form.telefono,
         notas: form.notas,
+        ...getLeadTraffic(),
       });
+      const leadId = response?.data?.id;
+      if (leadId) {
+        toast.success(t("interestSubmitted"));
+        if (pixelId) {
+          trackLeadMetaEvent(pixelId, {
+            leadId,
+            propertyId,
+            contentName: t("interestedInThisProperty"),
+          });
+        }
+      }
       setSent(true);
-      toast.success(t("interestSubmitted"));
     } catch (err) {
       const message =
         err?.response?.data?.message ||
