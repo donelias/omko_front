@@ -202,6 +202,7 @@ const Home = () => {
     // 2. Fetch Property Sections (nearby, featured, most_viewed, most_liked, premium)
     const propertySectionsQuery = useQuery({
         queryKey: ['homepagePropertySections', homepageLocationParams.latitude || "", homepageLocationParams.longitude || "", homepageLocationParams.radius || "", isUserLoggedIn, activeLanguage],
+        enabled: !isLocationInitializing,
         queryFn: async () => {
             const response = await api.getHomepagePropertiesSectionApi(homepageLocationParams);
             // Check location data availability - only show alert if user has set a location
@@ -222,6 +223,7 @@ const Home = () => {
     // 3. Fetch Project Sections (projects, featured_projects)
     const projectSectionsQuery = useQuery({
         queryKey: ['homepageProjectSections', homepageLocationParams.latitude || "", homepageLocationParams.longitude || "", homepageLocationParams.radius || "", activeLanguage],
+        enabled: !isLocationInitializing,
         queryFn: async () => {
             const response = await api.getHomepageProjectsSectionApi(homepageLocationParams);
             return response?.data || {};
@@ -235,6 +237,7 @@ const Home = () => {
     // 4. Fetch Other Sections (categories, agents, articles, user_recommendations, faqs, slider)
     const otherSectionsQuery = useQuery({
         queryKey: ['homepageOtherSections', homepageLocationParams.latitude || "", homepageLocationParams.longitude || "", homepageLocationParams.radius || "", isUserLoggedIn, activeLanguage],
+        enabled: !isLocationInitializing,
         queryFn: async () => {
             const response = await api.getHomepageOtherSectionsApi(homepageLocationParams);
             return response?.data || {};
@@ -248,6 +251,7 @@ const Home = () => {
     // 5. Fetch Map Section Data
     const mapQuery = useQuery({
         queryKey: ['homePageMap', homepageLocationParams.latitude || "", homepageLocationParams.longitude || "", homepageLocationParams.radius || "", activeLanguage],
+        enabled: !isLocationInitializing,
         queryFn: async () => {
             const response = await api.getHomepagePropertiesOnMapSectionApi({});
             return response?.data?.data ?? [];
