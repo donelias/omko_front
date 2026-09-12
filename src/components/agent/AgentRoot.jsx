@@ -21,6 +21,7 @@ import AgentPackages from './AgentPackages'
 import AgentWatermarkSettings from './AgentWatermarkSettings'
 import AgentStories from './AgentStories'
 import AgentPriceDashboard from './AgentPriceDashboard'
+import UserAdIntegrations from '../user/UserAdIntegrations'
 
 // Root component to render the agent dashboard related pages
 const AgentRoot = ({ notificationData }) => {
@@ -60,7 +61,8 @@ const AgentRoot = ({ notificationData }) => {
         "packages": AgentPackages,
 "watermark-settings": AgentWatermarkSettings,
         "stories": AgentStories,
-        "price-dashboard": AgentPriceDashboard
+        "price-dashboard": AgentPriceDashboard,
+        "marketing": UserAdIntegrations
     }
 
     // Get the Component to render based on the main section
