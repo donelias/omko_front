@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 import DefaultLogo from "@/assets/logo.png";
@@ -23,36 +22,9 @@ export default function ImageWithPlaceholder({
   const fallbackSrc = normalizeSrc(webSettings?.web_placeholder_logo || DefaultLogo);
   const realSrc = normalizeSrc(src);
 
-  const [currentSrc, setCurrentSrc] = useState(blurDataURL || fallbackSrc);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // preload real image
-  useEffect(() => {
-    if (!realSrc) {
-      setCurrentSrc(fallbackSrc);
-      setIsLoading(false);
-      return;
-    }
-
-    const img = new window.Image();
-    img.src = realSrc;
-
-    img.onload = () => {
-      setCurrentSrc(realSrc);
-      setIsLoading(false);
-    };
-
-    img.onerror = () => {
-      setCurrentSrc(fallbackSrc);
-      setIsLoading(false);
-    };
-  }, [realSrc, fallbackSrc]);
-
-  const isPlaceholder = currentSrc === fallbackSrc;
-
   return (
     <Image
-      src={currentSrc}
+      src={realSrc || fallbackSrc}
       alt={alt}
       {...(fill ? { fill: true } : { width, height })}
       placeholder={blurDataURL ? "blur" : undefined}
@@ -61,7 +33,7 @@ export default function ImageWithPlaceholder({
       priority={priority}
       quality={90}
       sizes={sizes || "100vw"}
-      className={`${isPlaceholder ? "opacity-40 !object-contain" : ""} ${className} `}
+      className={`${realSrc ? "" : "opacity-40 !object-contain"} ${className}`}
     />
   );
 }
