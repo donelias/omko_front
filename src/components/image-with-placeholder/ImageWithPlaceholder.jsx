@@ -17,6 +17,7 @@ export default function ImageWithPlaceholder({
   priority = false,
   blurDataURL,
   loading = "lazy",
+  sizes,
 }) {
   const webSettings = useSelector((state) => state.WebSetting?.data);
   const fallbackSrc = normalizeSrc(webSettings?.web_placeholder_logo || DefaultLogo);
@@ -59,6 +60,7 @@ export default function ImageWithPlaceholder({
       loading={priority ? "eager" : loading}
       priority={priority}
       quality={90}
+      sizes={sizes || "100vw"}
       className={`${isPlaceholder ? "opacity-40 !object-contain" : ""} ${className} `}
     />
   );

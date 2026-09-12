@@ -188,6 +188,7 @@ const PropertyGallery = ({
               className="w-[150px] rounded-xl object-cover h-[60px] md:h-[100px] md:w-[110px] lg:min-w-[150px]"
               alt="Property view"
               loading="lazy"
+              sizes="150px"
             />
           </div>
 
@@ -213,6 +214,7 @@ const PropertyGallery = ({
                   className="w-[150px] rounded-xl object-cover h-[60px] md:h-[100px] md:w-[110px] lg:w-[150px]"
                   alt={`Property view ${actualIndex + 1}`}
                   loading="lazy"
+                  sizes="150px"
                 />
 
                 {isLastThumbnail && (
