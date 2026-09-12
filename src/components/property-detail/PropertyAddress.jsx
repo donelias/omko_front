@@ -1,8 +1,9 @@
 // PropertyAddress.js
-import MapImage from "@/assets/map.png";
-import Map from "../google-maps/GoogleMap";
-// import { t } from '@/utils/translation'
+import dynamic from "next/dynamic";
+import MapImage from "@/assets/map.jpg";
 import { useTranslation } from "../context/TranslationContext";
+
+const Map = dynamic(() => import("../google-maps/GoogleMap"), { ssr: false });
 
 const PropertyAddress = ({
   details,

@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import ImageWithPlaceholder from '../image-with-placeholder/ImageWithPlaceholder';
 import mapIcon from '@/assets/mapIcon.svg';
-import mapPreview from '@/assets/map.png';
+import mapPreview from '@/assets/map.jpg';
 import { useSelector } from 'react-redux';
 import CustomLink from '../context/CustomLink';
 import { MdArrowForward } from 'react-icons/md';

@@ -9,7 +9,9 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { useTranslation } from "../context/TranslationContext";
 import { FaArrowRight } from "react-icons/fa";
 import { isRTL } from "@/utils/helperFunction";
-import ReactPlayer from "react-player";
+import dynamic from "next/dynamic";
+
+const ReactPlayer = dynamic(() => import("react-player"), { ssr: false });
 
 const ProjectGallery = ({
   galleryPhotos,

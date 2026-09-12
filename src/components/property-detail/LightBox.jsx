@@ -1,8 +1,10 @@
 "use client"
 import { useMemo } from "react";
-import { PhotoSlider } from "react-photo-view";
+import dynamic from "next/dynamic";
 import { isRTL } from '@/utils/helperFunction';
 import 'react-photo-view/dist/react-photo-view.css';
+
+const PhotoSlider = dynamic(() => import("react-photo-view").then((m) => m.PhotoSlider), { ssr: false });
 
 const LightBox = ({ photos, viewerIsOpen, currentImage, setCurrentImage, onClose, title_image, isProject = false }) => {
 
