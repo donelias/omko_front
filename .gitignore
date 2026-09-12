@@ -35,3 +35,6 @@ next-env.d.ts
 
 # pm2 logs
 /logs/
+# backup local del deploy anterior
+.next.bak141/
+node_modules.141/
