@@ -1,5 +1,5 @@
 import ImageWithPlaceholder from "@/components/image-with-placeholder/ImageWithPlaceholder";
-import { BiBuildingHouse, BiMessageSquareDetail, BiBell, BiDollarCircle, BiUserX, BiCreditCard, BiLogOut, BiNews, BiHeart, BiSave } from "react-icons/bi";
+import { BiBuildingHouse, BiMessageSquareDetail, BiBell, BiDollarCircle, BiUserX, BiCreditCard, BiLogOut, BiNews, BiHeart, BiSave, BiTachometer } from "react-icons/bi";
 import { FaRegCircleUser } from "react-icons/fa6";
 import { RiAdvertisementLine } from "react-icons/ri";
 import { FaRegCalendarAlt } from "react-icons/fa";
@@ -54,6 +54,13 @@ const UserSidebar = ({ isLoading }) => {
     if (isLoading) {
         return <UserSidebarSkeleton />
     }
+
+    const isAgent = user?.become_agent_status === "approved" && user?.is_agent === true;
+
+    const handleSwitchToAgent = () => {
+        dispatch(setRole({ data: "agent" }));
+        router.push(`/agent/dashboard?lang=${lang}`);
+    };
 
     const clearDeletedAccountSession = () => {
         dispatch(logout());
@@ -174,6 +181,7 @@ const UserSidebar = ({ isLoading }) => {
     };
 
     const menuItems = [
+        ...(isAgent ? [{ icon: <BiTachometer className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("switchToAgent") || "Ir al dashboard de agente", onClick: handleSwitchToAgent, isHighlight: true }] : []),
         { icon: <BiBuildingHouse className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("myListing"), route: `/user/listings?tab=properties&lang=${lang}` },
         { icon: <RiAdvertisementLine className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("myAdvertisements"), route: `/user/advertisement?lang=${lang}` },
         { icon: <FaRegCalendarAlt className="w-4 h-4 xl:w-6 xl:h-6" />, label: t("myAppointments"), route: `/user/appointments?lang=${lang}` },
@@ -223,7 +231,12 @@ const UserSidebar = ({ isLoading }) => {
             </div>
             <div className="px-4 py-4 flex flex-col gap-4">
                 {menuItems.map((item, index) => {
-                    const isActive = pathname?.includes(item.route?.split("?")[0] || "");
+                    const isActive = item?.route ? pathname?.includes(item.route.split("?")[0] || "") : false;
+                    const itemClass = item?.isHighlight
+                        ? "border brandBorder primaryBgLight08 brandColor font-bold"
+                        : isActive
+                            ? "primaryBg text-white"
+                            : "";
 
                     return (
                         <div key={index} onClick={() => {
@@ -232,7 +245,7 @@ const UserSidebar = ({ isLoading }) => {
                             } else {
                                 router.push(item.route);
                             }
-                        }} className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-all ${isActive ? "primaryBg text-white" : ""}`}>
+                        }} className={`flex items-center gap-4 p-3 rounded-lg cursor-pointer transition-all ${itemClass}`}>
                             <span className="shrink-0">{item.icon}</span>
                             <span className="text-nowrap truncate text-sm lg:text-base font-medium">{item.label}</span>
                         </div>
