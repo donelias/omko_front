@@ -83,7 +83,12 @@ const AgentSubscription = ({ isUser = false }) => {
         try {
             setIsLoading(true);
             const response = await getPackagesApi();
-            setActivePackages(response?.active_packages?.filter?.(item => item.user_type === (isUser ? "user" : "agent")));
+            const fetched = response?.active_packages ?? [];
+            let active = fetched.filter(item => item.user_type === (isUser ? "user" : "agent"));
+            if (active.length === 0 && !isUser) {
+                active = fetched;
+            }
+            setActivePackages(active);
             setAllFeatures(response?.all_features);
             setIsLoading(false);
         } catch (error) {
