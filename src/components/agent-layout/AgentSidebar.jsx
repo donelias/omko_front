@@ -13,7 +13,8 @@ import {
   BiDollarCircle, BiHeart,
   BiBuildingHouse,
   BiCalendar, BiExpand, BiCollapse,
-  BiChevronRight, BiImages, BiBullseye
+  BiChevronRight, BiImages, BiBullseye,
+  BiEnvelope
 } from "react-icons/bi";
 import { RiAdvertisementLine } from "react-icons/ri";
 import { FaGlobe, FaSignOutAlt } from "react-icons/fa";
@@ -357,6 +358,11 @@ const AgentSidebar = ({ isMobile = false }) => {
           title: t("marketing"),
           icon: BiBullseye,
           url: "/agent/marketing",
+        },
+        {
+          title: t("myLeads"),
+          icon: BiEnvelope,
+          url: "/agent/my-leads",
         },
         // {
         //   title: t("favourites"),
