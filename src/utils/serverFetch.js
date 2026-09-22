@@ -51,6 +51,61 @@ export const fetchSeoData = async (endpoint, params = {}, lang = "es", extraHead
 };
 
 /**
+ * Mirrors the client's filters encoding (getPropertyListApi in api/routes/properties.js):
+ * the backend only reads the `filters` query param as a UTF-8-safe base64 JSON object,
+ * so any flat keys (property_type, search, location, ...) would be silently ignored.
+ *
+ * @param {object} apiParams - Output of buildPropertyApiParams
+ * @returns {object} { limit, offset, filters? } ready for the API
+ */
+const encodePropertyApiParams = (apiParams = {}) => {
+  const {
+    property_type,
+    category_id,
+    category_slug_id,
+    parameters,
+    nearby_places,
+    location,
+    price,
+    posted_since,
+    search,
+    flags,
+    project_id,
+    is_project_unit,
+    availability,
+    limit,
+    offset,
+  } = apiParams;
+
+  const filtersObject = {};
+
+  if (property_type !== undefined && property_type !== "") filtersObject.property_type = property_type;
+  if (category_id) filtersObject.category_id = category_id;
+  if (category_slug_id) filtersObject.category_slug_id = category_slug_id;
+  if (Array.isArray(parameters) && parameters.length > 0) filtersObject.parameters = parameters;
+  if (Array.isArray(nearby_places) && nearby_places.length > 0) filtersObject.nearby_places = nearby_places;
+  if (location && typeof location === "object" && Object.keys(location).length > 0) filtersObject.location = location;
+  if (price && typeof price === "object" && Object.keys(price).length > 0) filtersObject.price = price;
+  if (posted_since !== undefined && posted_since !== "" && posted_since !== null) filtersObject.posted_since = posted_since;
+  if (search) filtersObject.search = search;
+  if (flags && typeof flags === "object" && Object.keys(flags).length > 0) filtersObject.flags = flags;
+  if (project_id) filtersObject.project_id = project_id;
+  if (is_project_unit !== undefined && is_project_unit !== "") filtersObject.is_project_unit = is_project_unit;
+  if (availability && typeof availability === "object" && Object.keys(availability).length > 1) filtersObject.availability = availability;
+
+  const requestParams = {
+    limit: String(parseInt(limit) || 10),
+    offset: String(parseInt(offset) || 0),
+  };
+
+  if (Object.keys(filtersObject).length > 0) {
+    requestParams.filters = Buffer.from(JSON.stringify(filtersObject), "utf8").toString("base64");
+  }
+
+  return requestParams;
+};
+
+/**
  * Fetches the first page of a property listing during SSR so search engines
  * receive real property cards instead of an empty shell.
  *
@@ -63,7 +118,8 @@ export const fetchSeoData = async (endpoint, params = {}, lang = "es", extraHead
  */
 export const fetchServerSidePropertyList = async ({ filters, options = {}, lang = "es", extraHeaders = {} }) => {
   const apiParams = buildPropertyApiParams(filters, options);
-  const data = await fetchSeoData(GET_PROPERTY_LIST, apiParams, lang, extraHeaders);
+  const requestParams = encodePropertyApiParams(apiParams);
+  const data = await fetchSeoData(GET_PROPERTY_LIST, requestParams, lang, extraHeaders);
   if (!data || data.error) return null;
 
   const properties = data?.data || [];
