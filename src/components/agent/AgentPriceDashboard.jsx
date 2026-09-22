@@ -100,6 +100,19 @@ const RecommendationRow = ({ item, currency, onView }) => {
             </div>
           </div>
         ) : null}
+
+        {item?.investment_analysis?.net_yield_percent != null ? (
+          <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] text-gray-500">
+            <span>
+              <span className="font-semibold text-gray-700">{t("roiYieldNet")}:</span>{" "}
+              {item.investment_analysis.net_yield_percent.toFixed(2)}%
+            </span>
+            <span>
+              <span className="font-semibold text-gray-700">{t("investmentPaybackShort")}:</span>{" "}
+              {item.investment_analysis.payback_years} {t("yearsLower")}
+            </span>
+          </div>
+        ) : null}
       </div>
 
       {/* Action */}
