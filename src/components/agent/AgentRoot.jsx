@@ -23,6 +23,7 @@ import AgentStories from './AgentStories'
 import AgentPriceDashboard from './AgentPriceDashboard'
 import UserAdIntegrations from '../user/UserAdIntegrations'
 import UserLeads from '../user/UserLeads'
+import UserClientEvaluations from '../user/UserClientEvaluations'
 
 // Root component to render the agent dashboard related pages
 const AgentRoot = ({ notificationData }) => {
@@ -64,7 +65,8 @@ const AgentRoot = ({ notificationData }) => {
         "stories": AgentStories,
         "price-dashboard": AgentPriceDashboard,
         "marketing": UserAdIntegrations,
-        "my-leads": UserLeads
+        "my-leads": UserLeads,
+        "client-evaluations": UserClientEvaluations
     }
 
     // Get the Component to render based on the main section

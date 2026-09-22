@@ -221,3 +221,10 @@ export const LEADS_UNLOCK = "leads/unlock";
 export const GET_AD_INTEGRATIONS = "agent/ad-integrations";
 export const POST_AD_INTEGRATIONS = "agent/ad-integrations";
 export const TEST_AD_INTEGRATIONS = "agent/ad-integrations/test";
+
+// Depuración/calificación de clientes (client screening)
+export const SCREENING_FORM = "screening/form";
+export const SCREENING_SUBMIT = "screening/submit";
+export const SCREENINGS_MINE = "agent/screenings";
+export const SCREENINGS_SHOW = "agent/screenings";
+export const SCREENINGS_DECIDE = "agent/screenings";

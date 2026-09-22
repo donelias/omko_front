@@ -20,3 +20,4 @@ export * from './routes/savedSearch';
 export * from './routes/shortTerm';
 export * from './routes/projectInventory';
 export * from './routes/adIntegration';
+export * from './routes/clientScreening';
