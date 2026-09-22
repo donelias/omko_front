@@ -42,6 +42,8 @@ const OverviewTab = ({ data, currency }) => {
   const t = useTranslation();
   const suggestion = data?.suggestion;
   const market = data?.market_analysis;
+  const investment = data?.investment_analysis;
+  const position = data?.market_position;
 
   if (!suggestion) {
     return <p className="py-8 text-center text-sm text-gray-400">{t("noSuggestion")}</p>;
@@ -61,6 +63,12 @@ const OverviewTab = ({ data, currency }) => {
         max: Number(market?.average_price) + Number(market?.std_deviation || 0) * 1.5,
       }
     : null;
+
+  const percentile = Number(position?.price_percentile);
+  const hasPercentile = !isNaN(percentile) && position?.price_percentile !== null;
+  const appreciation = Number(position?.annual_appreciation_percent) || 0;
+  const appreciationColor = appreciation >= 0 ? "text-emerald-600" : "text-red-600";
+  const avgDays = Number(market?.avg_days_on_market);
 
   return (
     <div className="flex flex-col gap-4">
@@ -168,7 +176,120 @@ const OverviewTab = ({ data, currency }) => {
               value={`${formatPriceValue(priceRange?.min, currency)} – ${formatPriceValue(priceRange?.max, currency)}`}
             />
             <Stat label={t("marketDemand")} value={demand !== null ? `${demand}%` : "—"} />
+            <Stat
+              label={t("daysOnMarketLabel")}
+              value={!isNaN(avgDays) && avgDays > 0 ? `${avgDays} d` : "—"}
+            />
             <Stat label={t("sampleCount")} value={market?.sample_count || "—"} />
+          </div>
+        </div>
+      ) : null}
+
+      {/* Investment analysis (ROI) */}
+      {investment ? (
+        <div className="rounded-xl border border-gray-100 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500">
+              {t("investmentAnalysis")}
+            </h4>
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-600">
+              {investment.gross_yield_percent}% {t("roiYield")}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Stat
+              label={t("estimatedMonthlyRent")}
+              value={
+                <PriceDual
+                  value={investment?.estimated_monthly_rent}
+                  currency={currency}
+                  valueClassName="text-sm font-bold text-gray-800"
+                />
+              }
+            />
+            <Stat
+              label={t("estimatedAnnualRent")}
+              value={
+                <PriceDual
+                  value={investment?.estimated_annual_rent}
+                  currency={currency}
+                  valueClassName="text-sm font-bold text-gray-800"
+                />
+              }
+            />
+            <Stat label={t("roiYieldNet")} value={`${investment?.net_yield_percent ?? "—"}%`} />
+            <Stat
+              label={t("netAnnualIncome")}
+              value={
+                <PriceDual
+                  value={investment?.net_annual_income}
+                  currency={currency}
+                  valueClassName="text-sm font-bold text-gray-800"
+                />
+              }
+            />
+            <Stat label={t("estimatedAnnualExpenses")} value={investment?.estimated_annual_expenses ? formatPriceValue(investment.estimated_annual_expenses, currency) : "—"} />
+            <Stat
+              label={t("investmentPayback")}
+              value={
+                investment?.payback_years
+                  ? t("investmentPaybackYears").replace("%", investment.payback_years).replace("%", investment.payback_months)
+                  : t("investmentPaybackNoData")
+              }
+            />
+          </div>
+
+          <p className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[10px] text-gray-400">
+            {Object.entries(investment?.expense_rates || {}).map(([key, value]) => (
+              <span key={key}>
+                {t(`expense${key[0].toUpperCase()}${key.slice(1)}`)}: {value}%
+              </span>
+            ))}
+            <span>· {t("estimatedOn")} {t("estimatedOnSuggestedPrice")}</span>
+          </p>
+        </div>
+      ) : null}
+
+      {/* Market position */}
+      {position ? (
+        <div className="rounded-xl border border-gray-100 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <h4 className="text-xs font-bold uppercase tracking-wide text-gray-500">
+              {t("marketPosition")}
+            </h4>
+            {hasPercentile && (
+              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold text-gray-600">
+                P{percentile} · {t("pricePercentile")}
+              </span>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <Stat
+              label={t("annualAppreciation")}
+              value={appreciation !== 0 ? `${appreciation > 0 ? "+" : ""}${appreciation}%` : "0%"}
+            />
+            <Stat
+              label={t("projectedPriceYearly")}
+              value={
+                <PriceDual
+                  value={position?.projected_price_1y}
+                  currency={currency}
+                  valueClassName="text-sm font-bold text-gray-800"
+                />
+              }
+            />
+            <Stat
+              label={t("projectedPriceFiveYears")}
+              value={
+                <PriceDual
+                  value={position?.projected_price_5y}
+                  currency={currency}
+                  valueClassName="text-sm font-bold text-gray-800"
+                />
+              }
+            />
           </div>
         </div>
       ) : null}

@@ -108,6 +108,8 @@ const PriceSuggestionCard = ({ propertyId, currentPrice, currency = "DOP", onVie
       ? "marketSlow"
       : "marketBalanced";
 
+  const investment = suggestion?.investment_analysis;
+
   return (
     <div className="cardBg newBorder flex flex-col gap-4 rounded-2xl p-4">
       {/* Header */}
@@ -155,6 +157,30 @@ const PriceSuggestionCard = ({ propertyId, currentPrice, currency = "DOP", onVie
           {change > 0 ? "+" : ""}{change.toFixed(1)}%
         </span>
       </div>
+
+      {/* ROI compacto */}
+      {investment ? (
+        <div className="flex items-center justify-between rounded-xl bg-emerald-50/60 px-3 py-2">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-medium uppercase tracking-wide text-emerald-700/70">
+              {t("investmentAnalysis")}
+            </span>
+            <span className="text-xs font-bold text-emerald-700">
+              {investment?.net_yield_percent ?? "—"}% {t("roiYieldNet")}
+            </span>
+          </div>
+          <div className="flex flex-col items-end">
+            <span className="text-[10px] font-medium text-gray-400">{t("investmentPayback")}</span>
+            {investment?.payback_years ? (
+              <span className="text-xs font-bold text-gray-700">
+                ~{investment.payback_years}a · {investment.payback_months}m
+              </span>
+            ) : (
+              <span className="text-xs text-gray-400">{t("investmentPaybackNoData")}</span>
+            )}
+          </div>
+        </div>
+      ) : null}
 
       {/* Confidence */}
       <div>
