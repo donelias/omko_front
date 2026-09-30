@@ -683,6 +683,16 @@ const Header = () => {
                       </span>
                     </Link>
                   </li>
+                  <li className="hover:primaryColor font-medium text-gray-700">
+                    <button
+                      className="bg-transparent p-0 text-base font-medium text-gray-700 hover:primaryColor"
+                      onClick={(e) => handleNavigateLinks(e, { route: `/screening` })}
+                    >
+                      <span className={router.pathname.includes('/screening') ? 'primaryColor font-bold' : ''}>
+                        {t("tenantScreening")}
+                      </span>
+                    </button>
+                  </li>
                   {menus.map((menu) => (
                     <li key={menu.name} className="relative dropdown-menu flex flex-col items-center">
                       <button

@@ -1,5 +1,9 @@
 {
     "home": "Home",
+    "tenantScreening": "Tenant Screening",
+    "screeningCtaTitle": "Apply for this property",
+    "screeningCtaDesc": "Complete the tenant qualification questionnaire to request this property.",
+    "screeningCtaButton": "Start application",
     "properties": "Properties",
     "pages": "Pages",
     "aboutUs": "About Us",

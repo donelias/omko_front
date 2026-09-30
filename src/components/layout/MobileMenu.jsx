@@ -221,6 +221,15 @@ const MobileMenu = ({
                 {t("home")}
               </li>
 
+              <li
+                className={`cursor-pointer border-b-2 border-dashed border-gray-300 p-4 font-medium ${activeMenu === "tenantScreening" ? `primaryBgLight primaryColor` : ""
+                  } hover:primaryBgLight hover:primaryColor`}
+                aria-current={activeMenu === "tenantScreening" ? "page" : undefined}
+                onClick={() => handleMenuClick("tenantScreening", `/screening`)}
+              >
+                {t("tenantScreening")}
+              </li>
+
 
               {menus.map((menu) => (
                 <React.Fragment key={menu.name}>

@@ -22,7 +22,7 @@ import LoginModal from "../modal/LoginModal";
 import NewBreadcrumb from "../breadcrumb/NewBreadCrumb";
 import PropertyInfoBanner from "./PropertyInfoBanner";
 import ShareDialog from "../reusable-components/ShareDialog";
-import { BiSolidErrorAlt } from "react-icons/bi";
+import { BiSolidErrorAlt, BiMailSend } from "react-icons/bi";
 import SimilarPropertySlider from "./SimilarPropertySlider";
 import { PropertyDetailSkeleton } from "../skeletons/property-skeletons";
 import { isSupported } from "firebase/messaging";
@@ -741,6 +741,27 @@ const PropertyDetails = ({ initialData, seoData }) => {
                   showLoginModal={showLoginModal}
                   setShowLoginModal={setShowLoginModal}
                 />
+              )}
+
+              {/* Tenant qualification / screening CTA (all properties) */}
+              {propertyDetails && (
+                <div className="newBorder mb-7 flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl primaryBg text-white">
+                      <BiMailSend className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold brandColor">{t("screeningCtaTitle")}</h3>
+                      <p className="text-xs text-gray-500">{t("screeningCtaDesc")}</p>
+                    </div>
+                  </div>
+                  <button
+                    className="primaryBg rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition hover:opacity-90"
+                    onClick={() => router.push({ pathname: `/screening/${propertyDetails?.id}`, query: { lang } })}
+                  >
+                    {t("screeningCtaButton")}
+                  </button>
+                </div>
               )}
 
               {handleReportProperty &&
