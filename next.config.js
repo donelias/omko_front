@@ -19,6 +19,26 @@ const imageHosts = (process.env.NEXT_PUBLIC_IMAGE_HOSTS || "dev-omko.thewrteam.i
 
 const unoptimized = process.env.NEXT_IMAGE_UNOPTIMIZED === "true";
 
+// ---------------------------------------------------------------------------
+// Guardia de despliegue: NEXT_PUBLIC_* se hornea en el bundle durante el
+// build, asi que un .env de desarrollo en el servidor produce un frontend que
+// llama a 127.0.0.1 y revienta con 500 sin que el build se queje. En
+// produccion exigimos un host real y abortamos aqui.
+// ---------------------------------------------------------------------------
+if (process.env.NODE_ENV === "production") {
+  const apiUrl = (process.env.NEXT_PUBLIC_API_URL || "").trim();
+  const isLocal = /^https?:\/\/(127\.0\.0\.1|localhost)(:|\/|$)/.test(apiUrl);
+
+  if (!apiUrl || isLocal) {
+    throw new Error(
+      `[config] NEXT_PUBLIC_API_URL invalido para build de produccion: "${apiUrl}".\n` +
+        "        Configura la URL real de la API (ej. https://adminrealestate.omko.do)\n" +
+        "        en .env.production antes de compilar."
+    );
+  }
+  console.log(`[config] Build de produccion -> API: ${apiUrl}`);
+}
+
 const nextConfig = {
   reactStrictMode: true,
   experimental: {},
