@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "next/router";
 import { toast } from "react-hot-toast";
@@ -24,6 +24,8 @@ export default function ClientScreeningForm() {
   const [answers, setAnswers] = useState({});
   const [submitting, setSubmitting] = useState(false);
   const [sent, setSent] = useState(false);
+  const [propertySlug, setPropertySlug] = useState("");
+  const [secondsLeft, setSecondsLeft] = useState(5);
 
   const questionsQuery = useQuery({
     queryKey: ["screeningForm", propertyId],
@@ -79,6 +81,7 @@ export default function ClientScreeningForm() {
         toast.error((res && res.message) || "No se pudo enviar el formulario");
         return;
       }
+      setPropertySlug(res?.data?.property_slug || "");
       setSent(true);
       toast.success(res?.message || "Formulario enviado correctamente");
     } catch (err) {
@@ -88,6 +91,32 @@ export default function ClientScreeningForm() {
       setSubmitting(false);
     }
   };
+
+  // Tras el envío el usuario debe volver a la propiedad que evaluó. El backend
+  // devuelve el slug; si no llegara, caemos al listado en vez de dejar al
+  // usuario atrapado en una pantalla muerta.
+  const propertyUrl = propertySlug
+    ? `/property-details/${propertySlug}`
+    : "/properties";
+
+  const goToProperty = () => {
+    router.push({ pathname: propertyUrl, query: { lang: router?.query?.lang } });
+  };
+
+  useEffect(() => {
+    if (!sent) return undefined;
+
+    const tick = setInterval(() => {
+      setSecondsLeft((n) => (n <= 1 ? 0 : n - 1));
+    }, 1000);
+
+    const go = setTimeout(() => goToProperty(), 5000);
+
+    return () => {
+      clearInterval(tick);
+      clearTimeout(go);
+    };
+  }, [sent, propertySlug]);
 
   if (!propertyId) {
     return <div className="min-h-screen bg-gray-50 px-4 py-14" />;
@@ -103,6 +132,16 @@ export default function ClientScreeningForm() {
             Su solicitud de depuración fue registrada. Un agente de Omko revisará sus respuestas y le
             contactará pronto por los medios que indicó.
           </p>
+          <p className="text-sm text-gray-500">
+            Redirigiendo a la propiedad en {secondsLeft} segundo{secondsLeft === 1 ? "" : "s"}...
+          </p>
+          <button
+            type="button"
+            onClick={goToProperty}
+            className="text-sm font-semibold brandColor underline underline-offset-4"
+          >
+            Ir a la propiedad ahora
+          </button>
         </div>
       </div>
     );
