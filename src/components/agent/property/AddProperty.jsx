@@ -12,6 +12,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { generateAIPropertyDescriptionApi, generateAIPropertyMetaDataApi, getCategoriesApi, getFacilitiesApi, postPropertyApi, getPackagesApi, getPaymentSettingsApi } from '@/api/apiRoutes';
+import { DEFAULT_PROPERTY_CURRENCY } from '@/lib/currencyOptions';
 import ImageWithPlaceholder from '@/components/image-with-placeholder/ImageWithPlaceholder';
 import toast from 'react-hot-toast';
 import { generateSlug } from '@/utils/helperFunction';
@@ -106,6 +107,7 @@ const AddProperty = () => {
         propertyTitle: "",
         propertySlug: "",
         propertyPrice: "",
+        propertyCurrency: DEFAULT_PROPERTY_CURRENCY,
         propertyDescription: "",
         isPremiumProperty: false,
         rentDuration: ""
@@ -655,6 +657,7 @@ const AddProperty = () => {
                 longitude: selectedLocationAddress.longitude,
                 address: selectedLocationAddress.formattedAddress,
                 price: propertyFormData.propertyPrice,
+                currency: propertyFormData.propertyCurrency || DEFAULT_PROPERTY_CURRENCY,
                 category_id: selectedCategory.id,
                 property_type: propertyFormData.propertyType?.toLowerCase() === "sell" ? "0" : "1", // 0 for Sell, 1 for Rent
                 video_link: mediaFormData.videoLink,

@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from '@/components/context/TranslationContext';
 import { Skeleton } from "@/components/ui/skeleton";
 import { getCategoriesApi, getFacilitiesApi, getAddedPropertiesApi, updatePostPropertyApi, generateAIPropertyDescriptionApi, generateAIPropertyMetaDataApi, activateListingApi } from '@/api/apiRoutes';
+import { DEFAULT_PROPERTY_CURRENCY } from '@/lib/currencyOptions';
 import toast from 'react-hot-toast';
 import { generateSlug } from '@/utils/helperFunction';
 import { useSelector } from 'react-redux';
@@ -80,6 +81,7 @@ const EditProperty = ({ params = [] }) => {
         propertyTitle: "",
         propertySlug: "",
         propertyPrice: "",
+        propertyCurrency: DEFAULT_PROPERTY_CURRENCY,
         propertyDescription: "",
         isPremiumProperty: false,
         rentDuration: ""
@@ -475,6 +477,7 @@ const EditProperty = ({ params = [] }) => {
                     propertyTitle: propertyData.title || "",
                     propertySlug: propertyData.slug_id || "",
                     propertyPrice: propertyData.price || "",
+                    propertyCurrency: propertyData.currency || DEFAULT_PROPERTY_CURRENCY,
                     propertyDescription: propertyData.description || "",
                     isPremiumProperty: propertyData.is_premium === true,
                     rentDuration: propertyData.rentduration || ""
@@ -921,6 +924,7 @@ const EditProperty = ({ params = [] }) => {
                 title: propertyFormData.propertyTitle,
                 description: propertyFormData.propertyDescription,
                 price: propertyFormData.propertyPrice,
+                currency: propertyFormData.propertyCurrency || DEFAULT_PROPERTY_CURRENCY,
                 category_id: selectedCategory.id,
                 property_type: propertyFormData.propertyType?.toLowerCase() === "sell" ? "0" : "1",
                 rentduration: propertyFormData.rentDuration ? propertyFormData.rentDuration : "",

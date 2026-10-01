@@ -12,6 +12,8 @@ import { useSelector } from 'react-redux'
 import { isRTL } from '@/utils/helperFunction'
 import { RiSparkling2Fill } from 'react-icons/ri'
 import { Skeleton } from '@/components/ui/skeleton'
+import PropertyCurrencySelect from '@/components/reusable-components/add-property/PropertyCurrencySelect'
+import { DEFAULT_PROPERTY_CURRENCY } from '@/lib/currencyOptions'
 
 // Property Details Tab Component
 const PropertyDetailsTab = ({
@@ -337,6 +339,17 @@ const PropertyDetailsTab = ({
                                         }
                                     }}
                                     className="w-full px-3 py-2 primaryBackgroundBg rounded-md focus:outline-none focus:border-none focus:border-transparent"
+                                />
+                            </div>
+                            {/* Currency the price is expressed in */}
+                            <div className="flex flex-col w-full lg:flex-1">
+                                <Label htmlFor="property-currency" className="font-medium mb-2 block text-gray-800">
+                                    {t("currency") || "Currency"}
+                                </Label>
+                                <PropertyCurrencySelect
+                                    value={propertyFormData.propertyCurrency || DEFAULT_PROPERTY_CURRENCY}
+                                    onChange={(value, name) => handleUpdatePropertyForm(value, name)}
+                                    name="propertyCurrency"
                                 />
                             </div>
                             {/* Rent Duration */}

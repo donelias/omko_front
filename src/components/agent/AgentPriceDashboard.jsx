@@ -7,8 +7,12 @@ import { useTranslation } from "../context/TranslationContext";
 import { getAddedPropertiesApi, getBulkSuggestionsApi } from "@/api/apiRoutes";
 import {
   confidenceColor,
+  convertPrice,
   recommendationConfig,
 } from "@/lib/priceIntelligenceUtils";
+import { PROPERTY_CURRENCIES } from "@/lib/currencyOptions";
+import { useExchangeRates } from "@/lib/useExchangeRates";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PriceAnalysisModal from "../price-intelligence/PriceAnalysisModal";
 import PriceDual from "../price-intelligence/PriceDual";
 import { cn } from "@/lib/utils";
@@ -25,13 +29,30 @@ const StatCard = ({ label, value, icon: Icon, accent = "text-gray-900" }) => (
   </div>
 );
 
-const RecommendationRow = ({ item, currency, onView }) => {
+const RecommendationRow = ({ item, displayCurrency, rates, onView }) => {
   const t = useTranslation();
   const config = recommendationConfig[item?.recommendation] || recommendationConfig.review_required;
   const confidence = Number(item?.confidence_score) || 0;
-  const current = item?.price || 0;
-  const suggested = item?.suggested_price;
-  const change = suggested && current ? ((suggested - current) / current) * 100 : null;
+
+  // Moneda registrada de la propiedad; si el agente elige una vista global se
+  // convierte con la tasa vigente. El porcentaje de variacion no cambia: la
+  // conversion es lineal.
+  const source = item?.currency || "USD";
+  const currency = displayCurrency || source;
+  const toView = (value) => {
+    const n = Number(value);
+    if (value === null || value === undefined || isNaN(n)) return value;
+    if (currency === source) return n;
+    return convertPrice(n, source, currency, rates) ?? n;
+  };
+
+  const current = toView(item?.price) || 0;
+  const suggestedRaw = item?.suggested_price;
+  const suggested = suggestedRaw ? toView(suggestedRaw) : suggestedRaw;
+  const change =
+    suggestedRaw && item?.price
+      ? ((Number(suggestedRaw) - Number(item.price)) / Number(item.price)) * 100
+      : null;
 
   return (
     <div className="cardBg flex flex-col gap-3 rounded-2xl border border-gray-100 p-3 shadow-sm sm:flex-row sm:items-center">
@@ -133,7 +154,9 @@ const AgentPriceDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [displayCurrency, setDisplayCurrency] = useState("as_registered");
   const [modalState, setModalState] = useState({ open: false, property: null });
+  const rates = useExchangeRates();
 
   useEffect(() => {
     let active = true;
@@ -277,6 +300,28 @@ const AgentPriceDashboard = () => {
         </div>
       </div>
 
+      {/* Currency view */}
+      <div className="flex items-center justify-between gap-3">
+        <label className="text-xs font-semibold text-gray-500">
+          {t("displayCurrency") || "Display currency"}
+        </label>
+        <Select value={displayCurrency} onValueChange={setDisplayCurrency}>
+          <SelectTrigger className="w-full max-w-[220px] rounded-lg border border-gray-200 py-2 text-sm focus:border-primary">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="as_registered">
+              {t("currencyAsRegistered") || "As registered per property"}
+            </SelectItem>
+            {PROPERTY_CURRENCIES.map((c) => (
+              <SelectItem key={c.code} value={c.code}>
+                {c.fallback}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* List */}
       {loading ? (
         <div className="flex flex-col gap-3">
@@ -302,7 +347,8 @@ const AgentPriceDashboard = () => {
             <RecommendationRow
               key={item.id}
               item={item}
-              currency={item?.currency || "DOP"}
+              displayCurrency={displayCurrency === "as_registered" ? null : displayCurrency}
+              rates={rates}
               onView={handleView}
             />
           ))}
