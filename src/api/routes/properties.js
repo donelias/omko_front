@@ -171,6 +171,7 @@ export const postPropertyApi = async ({
   longitude = "",
   address = "",
   price = "",
+  currency = "",
   category_id = "",
   property_type = "",
   video_link = "",
@@ -225,6 +226,9 @@ export const postPropertyApi = async ({
   }
   if (price) {
     formData.append("price", price);
+  }
+  if (currency) {
+    formData.append("currency", currency);
   }
   if (category_id) {
     formData.append("category_id", category_id);
@@ -379,6 +383,7 @@ export const updatePostPropertyApi = async ({
   longitude = "",
   address = "",
   price = "",
+  currency = "",
   category_id = "",
   property_type = "",
   video_link = "",
@@ -440,6 +445,9 @@ export const updatePostPropertyApi = async ({
   }
   if (price) {
     data.append("price", price);
+  }
+  if (currency) {
+    data.append("currency", currency);
   }
   if (category_id) {
     data.append("category_id", category_id);
