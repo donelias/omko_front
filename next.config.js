@@ -37,6 +37,21 @@ if (process.env.NODE_ENV === "production") {
     );
   }
   console.log(`[config] Build de produccion -> API: ${apiUrl}`);
+
+  // Mismo problema con Google Maps: la clave se hornea en el bundle y un
+  // placeholder (xxx..., vacio, changeme) compila sin quejarse pero luego el
+  // mapa muere con "Esta pagina no cargo bien Google Maps".
+  const mapsKey = (process.env.NEXT_PUBLIC_GOOGLE_MAPS_API || "").trim();
+  const isPlaceholder = !mapsKey || /^x+$/i.test(mapsKey) || /^(changeme|placeholder|todo|xxx)/i.test(mapsKey);
+
+  if (isPlaceholder) {
+    throw new Error(
+      `[config] NEXT_PUBLIC_GOOGLE_MAPS_API invalido para build de produccion: "${mapsKey}".\n` +
+        "        Configura la clave real de Google Maps (Maps JavaScript API + Places)\n" +
+        "        en .env.production antes de compilar."
+    );
+  }
+  console.log(`[config] Build de produccion -> Google Maps: ${mapsKey.slice(0, 6)}...`);
 }
 
 const nextConfig = {
