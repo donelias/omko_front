@@ -194,6 +194,8 @@ export const PRICE_BULK_SUGGESTIONS = "price-intelligence/bulk-suggestions";
 export const PRICE_COMPARABLES = "price-intelligence/comparables";
 export const PRICE_TRENDS = "price-intelligence/trends";
 export const PRICE_EXCHANGE_RATES = "price-intelligence/exchange-rates";
+export const PRICE_ZONE_ANALYSIS = "price-intelligence/zone-analysis";
+export const PRICE_REFRESH_ZONE = "price-intelligence/refresh-zone";
 
 // FASE 8 - Búsquedas guardadas (T3)
 export const SAVED_SEARCHES = "saved-searches";

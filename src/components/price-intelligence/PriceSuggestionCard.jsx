@@ -1,11 +1,13 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { FiRefreshCw, FiBarChart2, FiTrendingUp, FiTrendingDown, FiMinus } from "react-icons/fi";
+import { FiRefreshCw, FiBarChart2, FiTrendingUp, FiTrendingDown, FiMinus, FiGlobe } from "react-icons/fi";
 import { getPriceSuggestionApi } from "@/api/apiRoutes";
 import {
   confidenceColor,
   confidenceLabelKey,
+  formatPriceValue,
+  marketConditionKey,
   recommendationConfig,
 } from "@/lib/priceIntelligenceUtils";
 import PriceDual from "./PriceDual";
@@ -102,11 +104,7 @@ const PriceSuggestionCard = ({ propertyId, currentPrice, currency = "DOP", onVie
   const ChangeIcon = change > 0 ? FiTrendingUp : change < 0 ? FiTrendingDown : FiMinus;
   const changeColor = change > 0 ? "text-emerald-600" : change < 0 ? "text-red-600" : "text-sky-600";
 
-  const trendKey = suggestion?.market_trend === "hot"
-    ? "marketHot"
-    : suggestion?.market_trend === "slow"
-      ? "marketSlow"
-      : "marketBalanced";
+  const trendKey = marketConditionKey(suggestion?.market_trend);
 
   const investment = suggestion?.investment_analysis;
 
@@ -157,6 +155,42 @@ const PriceSuggestionCard = ({ propertyId, currentPrice, currency = "DOP", onVie
           {change > 0 ? "+" : ""}{change.toFixed(1)}%
         </span>
       </div>
+
+      {/* Real zone analysis (web comparables) */}
+      {suggestion?.has_market_data ? (
+        <div className="rounded-xl border border-sky-100 bg-sky-50/50 p-3">
+          <div className="mb-1.5 flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5 text-[11px] font-semibold text-sky-800">
+              <FiGlobe className="h-3.5 w-3.5" />
+              {t("zoneRealAnalysis")}
+            </span>
+            <span className="text-[10px] font-medium text-sky-700/70">
+              {suggestion?.market_freshness}
+            </span>
+          </div>
+
+          <p className="truncate text-[11px] text-gray-600" title={suggestion?.market_zone_label}>
+            {suggestion?.market_zone_label}
+          </p>
+
+          <div className="mt-2 flex items-end justify-between gap-2">
+            <div>
+              <p className="text-[10px] uppercase tracking-wide text-sky-700/70">
+                {t("zonePricePerSqm")}
+              </p>
+              <p className="text-sm font-bold text-sky-900">
+                {formatPriceValue(suggestion?.market_price_per_sqm, currency)}
+                <span className="ml-0.5 text-[11px] font-medium text-sky-700/70">{t("perSqm")}</span>
+              </p>
+            </div>
+            <p className="text-right text-[10px] leading-tight text-gray-500">
+              {suggestion?.market_comparable_count || 0} {t("zoneComparables")}
+              <br />
+              {(suggestion?.market_sources || []).length} {t("zoneSources")}
+            </p>
+          </div>
+        </div>
+      ) : null}
 
       {/* ROI compacto */}
       {investment ? (

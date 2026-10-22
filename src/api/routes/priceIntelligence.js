@@ -86,3 +86,17 @@ export const getPriceExchangeRatesApi = async () => {
   const res = await api.get(apiEndpoints.PRICE_EXCHANGE_RATES);
   return res.data;
 };
+
+// 9. Análisis real de la zona (comparables encontrados en la web)
+export const getZoneAnalysisApi = async (propertyId) => {
+  const res = await api.get(`${apiEndpoints.PRICE_ZONE_ANALYSIS}/${propertyId}`);
+  return res.data;
+};
+
+// 10. Forzar el refresco del análisis de zona (1 por hora y zona)
+export const refreshZoneAnalysisApi = async (propertyId) => {
+  const res = await api.post(apiEndpoints.PRICE_REFRESH_ZONE, {
+    property_id: propertyId,
+  });
+  return res.data;
+};

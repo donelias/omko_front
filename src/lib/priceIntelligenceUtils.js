@@ -53,14 +53,30 @@ export const confidenceLabelKey = (score) => {
   return "confidenceLow";
 };
 
+// El backend guarda la condición de mercado como "hot_market" /
+// "slow_market" / "balanced"; los valores cortos ("hot" / "slow") se
+// aceptan por compatibilidad con datos anteriores.
 export const marketConditionKey = (condition) => {
   switch (condition) {
     case "hot":
+    case "hot_market":
+    case "active_market":
       return "marketHot";
     case "slow":
+    case "slow_market":
       return "marketSlow";
     default:
       return "marketBalanced";
+  }
+};
+
+// Dominio legible de una URL de fuente (encuentra24.com).
+export const sourceDomain = (url) => {
+  if (!url) return null;
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch (error) {
+    return null;
   }
 };
 
