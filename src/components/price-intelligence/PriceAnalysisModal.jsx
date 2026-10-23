@@ -418,7 +418,6 @@ const ZoneAnalysisSection = ({ zone, currency, onRefresh, refreshing }) => {
                   <p className="text-[10px] text-gray-400">
                     {comparable?.area_sqm ? `${comparable.area_sqm} m²` : "—"}
                     {comparable?.bedrooms ? ` · ${comparable.bedrooms} hab` : ""}
-                    {comparable?.source ? ` · ${comparable.source}` : ""}
                   </p>
                 </div>
                 <div className="shrink-0 text-right">
